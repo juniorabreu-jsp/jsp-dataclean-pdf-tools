@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilização CSS Personalizada para o Modo Escuro Padrão JSP
+# Estilização CSS Personalizada para o Padrão Visual JSP Technology (Modo Escuro SaaS)
 st.markdown("""
     <style>
     .main {
@@ -31,6 +31,7 @@ st.markdown("""
         font-weight: bold;
         border: none;
         width: 100%;
+        padding: 10px;
     }
     .stButton button:hover {
         background-color: #2ea043;
@@ -48,11 +49,20 @@ if 'uses_left' not in st.session_state:
 if 'is_pro' not in st.session_state:
     st.session_state.is_pro = False
 
-# Título Principal com a Marca JSP
-st.title("⚡ JSP DataClean PDF & Excel Tools")
-st.markdown("Clean messy text lists, remove duplicates, format data, and instantly export professional reports to **PDF** or **Excel**. Free, fast, and 100% private.")
+# Cabeçalho Visual Corporativo JSP na Página Principal (Logo + Título)
+st.markdown("""
+    <div style="display: flex; align-items: center; background-color: #1a1c24; padding: 16px 20px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 25px;">
+        <div style="background-color: #0f172a; color: #ffffff; font-weight: bold; padding: 10px 16px; border-radius: 6px; font-size: 18px; margin-right: 18px; letter-spacing: 1px;">JSP</div>
+        <div>
+            <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">JSP TECHNOLOGY</div>
+            <div style="font-size: 12px; color: #8b949e; margin-top: 2px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
-# Seção de Status de Licença / Pro na Barra Lateral ou Topo Discreto
+st.markdown("Clean messy text lists, remove duplicates, format data, and instantly export professional clean reports to **PDF** or **Excel**. Free, fast, and 100% private.")
+
+# Seção de Status de Licença / Pro
 with st.expander("🔑 JSP Technology License Activation (Pro Upgrade)", expanded=not st.session_state.is_pro):
     if st.session_state.is_pro:
         st.success("✅ **Pro License Active:** Unlimited batch processing and exports unlocked.")
@@ -60,7 +70,6 @@ with st.expander("🔑 JSP Technology License Activation (Pro Upgrade)", expande
         st.info(f"💡 **Free Tier:** {st.session_state.uses_left} free uses remaining (Max 50 lines / 10,000 chars per run).")
         license_input = st.text_input("Enter your JSP License Key:", type="password", placeholder="JSP-PRO-XXXX-XXXX")
         if st.button("Activate License"):
-            # Validação simples de exemplo para a chave (pode ser ajustada conforme sua preferência de vendas)
             if license_input.startswith("JSP-PRO") and len(license_input) > 10:
                 st.session_state.is_pro = True
                 st.success("License activated successfully! Enjoy unlimited access.")
@@ -117,7 +126,6 @@ if raw_input_text:
     lines_count = len(raw_input_text.splitlines())
     chars_count = len(raw_input_text)
     
-    # Validação de restrições para usuários gratuitos
     limit_exceeded = False
     error_message = ""
     
@@ -136,19 +144,17 @@ if raw_input_text:
         st.markdown("---")
         st.error(error_message)
     else:
-        # Processar os dados normalmente
         processed_text = clean_text(raw_input_text, remove_dups, remove_empty, trim_spaces, sort_alpha)
 
         st.markdown("---")
         st.subheader("3. Cleaned Results Preview:")
         st.text_area("Result Output", value=processed_text, height=180, label_visibility="collapsed")
         
-        # Métricas rápidas
         original_lines = len(raw_input_text.splitlines())
         final_lines = len(processed_text.splitlines()) if processed_text else 0
         st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
 
-        # Geração do PDF com Branding Profissional e Logo Estilizada da JSP Technology
+        # Geração do PDF com Branding Profissional e Logo Estilizada
         class PDF(FPDF):
             def header(self):
                 self.set_fill_color(15, 23, 42)
@@ -208,7 +214,6 @@ if raw_input_text:
                 
             return bytes(pdf.output())
 
-        # Função para gerar o ficheiro Excel estruturado
         def create_excel(text_content):
             lines = text_content.splitlines() if text_content else []
             df = pd.DataFrame(lines, columns=["Cleaned Data"])
@@ -225,7 +230,6 @@ if raw_input_text:
         st.markdown("---")
         st.subheader("4. Export Clean Reports:")
         
-        # Botões lado a lado para PDF e Excel
         col_dl1, col_dl2 = st.columns(2)
         with col_dl1:
             if st.download_button(
@@ -234,7 +238,6 @@ if raw_input_text:
                 file_name="jsp_clean_report.pdf",
                 mime="application/pdf"
             ):
-                # Desconta o uso gratuito apenas se não for Pro
                 if not st.session_state.is_pro and st.session_state.uses_left > 0:
                     st.session_state.uses_left -= 1
 
