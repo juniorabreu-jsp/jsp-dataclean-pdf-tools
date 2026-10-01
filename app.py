@@ -3,7 +3,7 @@ from fpdf import FPDF
 import pandas as pd
 from datetime import datetime
 
-# Configuração da Página (Modo Dark Tech / Wide Layout)
+# Page Configuration (Dark Tech / Wide Layout)
 st.set_page_config(
     page_title="JSP DataClean PDF & Excel Tools",
     page_icon="⚡",
@@ -11,28 +11,42 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilização CSS Avançada - Tema Dark Tech & Rede Neural (JSP Technology Style)
+# Advanced CSS Styling - Balanced Dark Tech & High Contrast (JSP Technology Style)
 st.markdown("""
     <style>
     .main {
         background-color: #0b0f17;
-        color: #e2e8f0;
+        color: #f1f5f9;
         font-family: 'Inter', sans-serif;
     }
     .stApp {
         background: linear-gradient(135deg, #0b0f17 0%, #111827 50%, #0f172a 100%);
     }
+    /* High Contrast Text Elements */
+    h1, h2, h3, h4, h5, h6, p, span, label {
+        color: #f1f5f9 !important;
+    }
+    .stMarkdown p {
+        color: #cbd5e1 !important;
+        font-size: 15px !important;
+    }
     .stTextArea textarea {
         background-color: #131d31 !important;
         color: #ffffff !important;
-        border: 1px solid #1e293b !important;
+        border: 1px solid #334155 !important;
         border-radius: 10px !important;
         font-family: monospace !important;
         font-size: 14px !important;
     }
     .stTextArea textarea:focus {
         border-color: #22c55e !important;
-        box-shadow: 0 0 10px rgba(34, 197, 94, 0.2) !important;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.3) !important;
+    }
+    .stTextInput input {
+        background-color: #131d31 !important;
+        color: #ffffff !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
     }
     .stButton button {
         background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
@@ -53,18 +67,17 @@ st.markdown("""
     }
     .stExpander {
         background-color: #111827 !important;
-        border: 1px solid #1e293b !important;
+        border: 1px solid #334155 !important;
         border-radius: 10px !important;
     }
-    .stAlert {
-        background-color: #111827 !important;
-        color: #ffffff !important;
-        border: 1px solid #1e293b !important;
+    .stCheckbox label span {
+        color: #e2e8f0 !important;
+        font-weight: 500;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Inicialização do Estado da Sessão
+# Session State Initialization
 if 'uses_left' not in st.session_state:
     st.session_state.uses_left = 2
 if 'plan_type' not in st.session_state:
@@ -74,87 +87,87 @@ if 'quota_left' not in st.session_state:
 if 'run_clicked' not in st.session_state:
     st.session_state.run_clicked = False
 
-# Cabeçalho Visual Corporativo JSP (Inspirado no Design Dark Tech)
+# JSP Corporate Header (Dark Tech Style with Balanced Contrast)
 st.markdown("""
-    <div style="display: flex; align-items: center; background: linear-gradient(90deg, #111827 0%, #1f2937 100%); padding: 20px 24px; border-radius: 12px; border: 1px solid #374151; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+    <div style="display: flex; align-items: center; background: linear-gradient(90deg, #111827 0%, #1f2937 100%); padding: 20px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
         <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #ffffff; font-weight: 900; padding: 12px 18px; border-radius: 8px; font-size: 20px; margin-right: 20px; letter-spacing: 1.5px; border: 1px solid #4b5563; display: flex; align-items: center; gap: 8px;">
             <span style="color: #22c55e;">●</span> JSP
         </div>
         <div>
             <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.8px;">JSP TECHNOLOGY</div>
-            <div style="font-size: 13px; color: #9ca3af; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
+            <div style="font-size: 13px; color: #cbd5e1; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='color: #9ca3af; font-size: 15px; margin-bottom: 20px;'>Limpe listas de textos, remova duplicadas, formate dados instantaneamente e exporte relatórios profissionais em **PDF** ou **Excel**.</p>", unsafe_allow_html=True)
+st.markdown("<p>Clean text lists, remove duplicates, instantly format data, and export professional reports in <b>PDF</b> or <b>Excel</b>.</p>", unsafe_allow_html=True)
 
-# Seção de Ativação / Planos (Incluindo Coffee Pass e Recargas)
-with st.expander("🔑 Planos JSP Technology & Ativação de Licença", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
+# License & Plans Section (Expander)
+with st.expander("🔑 JSP Plans & License Activation", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
     if st.session_state.plan_type != "Free":
-        st.success(f"✅ **Plano Ativo: {st.session_state.plan_type}** | Operações Restantes: {st.session_state.quota_left}")
+        st.success(f"✅ **Active Plan: {st.session_state.plan_type}** | Operations Left: {st.session_state.quota_left}")
     else:
-        st.info(f"💡 **Plano Gratuito:** {st.session_state.uses_left} usos restantes (Máximo de 50 linhas / 10.000 caracteres).")
+        st.info(f"💡 **Free Plan:** {st.session_state.uses_left} free uses remaining (Max 50 lines / 10,000 characters).")
         st.markdown("""
-            *☕ **Coffee Pass ($3):** 5 operações imediatas (Sem assinatura).*  
-            *📅 **Monthly Pro ($9):** 20 operações/mês.*  
-            *⭐ **Annual Pro ($49):** 50 operações/mês.*  
+            *☕ **Coffee Pass ($3):** 5 immediate operations (No subscription).*  
+            *📅 **Monthly Pro ($9):** 20 operations/month.*  
+            *⭐ **Annual Pro ($49):** 50 operations/month.*  
         """)
         
-        license_input = st.text_input("Insira sua Chave de Licença / Código Coffee Pass:", type="password", placeholder="JSP-COFFEE-XXXX ou JSP-PRO-XXXX")
-        if st.button("Ativar Código / Recarregar"):
+        license_input = st.text_input("Enter License Key / Coffee Pass Code:", type="password", placeholder="JSP-COFFEE-XXXX or JSP-PRO-XXXX")
+        if st.button("Activate Code / Refill"):
             key = license_input.strip().upper()
             if key.startswith("JSP-COFFEE"):
                 if st.session_state.plan_type == "Free":
                     st.session_state.plan_type = "Coffee Pass (5 Ops)"
                     st.session_state.quota_left = 5
                 else:
-                    st.session_state.quota_left += 5  # Sistema de Recarga Avulsa
-                st.success("☕ Coffee Pass ativado/recarregado com sucesso (+5 operações adicionadas)!")
+                    st.session_state.quota_left += 5  # Refill system
+                st.success("☕ Coffee Pass activated/refilled successfully (+5 operations added)!")
                 st.rerun()
             elif key.startswith("JSP-MONTHLY"):
                 st.session_state.plan_type = "Monthly Pro"
                 st.session_state.quota_left = 20
-                st.success("📅 Monthly Pro ativado! 20 operações disponíveis.")
+                st.success("📅 Monthly Pro activated! 20 operations available.")
                 st.rerun()
             elif key.startswith("JSP-ANNUAL"):
                 st.session_state.plan_type = "Annual Pro"
                 st.session_state.quota_left = 50
-                st.success("⭐ Annual Pro ativado! 50 operações disponíveis.")
+                st.success("⭐ Annual Pro activated! 50 operations available.")
                 st.rerun()
             else:
-                st.error("Chave inválida. Verifique o recibo de compra da JSP Technology.")
+                st.error("Invalid key. Please check your JSP Technology purchase receipt.")
 
 st.markdown("---")
 
-# Área de Entrada de Dados
-st.subheader("1. Cole seus dados ou texto bruto abaixo:")
+# Data Input Section
+st.subheader("1. Paste your raw data or text below:")
 raw_input_text = st.text_area(
-    "Entrada de Dados Brutos",
+    "Raw Data Input",
     height=180,
-    placeholder="Cole suas listas confusas, e-mails, números ou textos desformatados aqui...",
+    placeholder="Paste your messy lists, emails, numbers, or unformatted text here...",
     label_visibility="collapsed"
 )
 
-# Opções de Limpeza (Filtros)
-st.subheader("2. Selecione as Opções de Limpeza:")
+# Cleaning Options (Filters)
+st.subheader("2. Select Cleaning Options:")
 col1, col2 = st.columns(2)
 with col1:
-    remove_dups = st.checkbox("Remover Linhas Duplicadas", value=True)
-    remove_empty = st.checkbox("Remover Linhas Vazias", value=True)
+    remove_dups = st.checkbox("Remove Duplicate Lines", value=True)
+    remove_empty = st.checkbox("Remove Empty Lines", value=True)
 with col2:
-    trim_spaces = st.checkbox("Remover Espaços Extras", value=True)
-    sort_alpha = st.checkbox("Ordenar Alfabeticamente", value=False)
+    trim_spaces = st.checkbox("Trim Extra Spaces", value=True)
+    sort_alpha = st.checkbox("Sort Alphabetically", value=False)
 
 st.markdown("---")
 
-# Botão Explícito de Execução da Tarefa
-run_button = st.button("⚡ Executar Limpeza e Formatação")
+# Explicit Execution Button
+run_button = st.button("⚡ Run Data Cleaning & Formatting")
 
 if run_button:
     st.session_state.run_clicked = True
 
-# Função de Processamento do Texto
+# Text Processing Function
 def clean_text(text, dups, empty, trim, sort):
     if not text:
         return ""
@@ -177,10 +190,10 @@ def clean_text(text, dups, empty, trim, sort):
         
     return "\n".join(lines)
 
-# Processamento e Exibição de Resultados
+# Processing and Result Display
 if st.session_state.run_clicked:
     if not raw_input_text:
-        st.warning("⚠️ Por favor, cole algum texto na caixa acima antes de executar.")
+        st.warning("⚠️ Please paste some text into the box above before running.")
     else:
         lines_count = len(raw_input_text.splitlines())
         chars_count = len(raw_input_text)
@@ -191,37 +204,37 @@ if st.session_state.run_clicked:
         if st.session_state.plan_type == "Free":
             if lines_count > 50:
                 limit_exceeded = True
-                error_message = f"⚠️ **Limite do Plano Gratuito Excedido:** Seu texto possui {lines_count} linhas (máximo de 50). Adquira um **Coffee Pass ($3)** acima para desbloquear lotes maiores."
+                error_message = f"⚠️ **Free Plan Limit Exceeded:** Your text has {lines_count} lines (maximum is 50). Get a **Coffee Pass ($3)** above to unlock larger batches."
             elif chars_count > 10000:
                 limit_exceeded = True
-                error_message = f"⚠️ **Limite do Plano Gratuito Excedido:** Limite de 10.000 caracteres atingido."
+                error_message = f"⚠️ **Free Plan Limit Exceeded:** Character limit of 10,000 reached."
             elif st.session_state.uses_left <= 0:
                 limit_exceeded = True
-                error_message = "🔒 **Limite Gratuito Esgotado:** Você utilizou seus 2 usos gratuitos. Apoie nosso desenvolvimento adquirindo um **Coffee Pass ($3)** acima!"
+                error_message = "🔒 **Free Limit Reached:** You have used your 2 free runs. Support our development by getting a **Coffee Pass ($3)** above!"
         else:
             if st.session_state.quota_left <= 0:
                 limit_exceeded = True
-                error_message = f"🔒 **Cota do Plano Esgotada:** Suas operações no plano {st.session_state.plan_type} acabaram. Insira uma nova chave Coffee Pass acima para recarregar instantaneamente!"
+                error_message = f"🔒 **Plan Quota Exhausted:** Your operations on the {st.session_state.plan_type} plan have ended. Enter a new Coffee Pass key above to refill instantly!"
 
         if limit_exceeded:
             st.error(error_message)
         else:
             processed_text = clean_text(raw_input_text, remove_dups, remove_empty, trim_spaces, sort_alpha)
 
-            st.subheader("3. Pré-visualização dos Resultados Limpos:")
-            st.text_area("Resultado Processado", value=processed_text, height=180, label_visibility="collapsed")
+            st.subheader("3. Cleaned Results Preview:")
+            st.text_area("Processed Result", value=processed_text, height=180, label_visibility="collapsed")
             
             original_lines = len(raw_input_text.splitlines())
             final_lines = len(processed_text.splitlines()) if processed_text else 0
-            st.caption(f"📊 Estatísticas: {original_lines} linhas originais processadas -> {final_lines} linhas limpas prontas.")
+            st.caption(f"📊 Statistics: {original_lines} original lines processed -> {final_lines} clean lines ready.")
 
-            # Desconta o uso ao executar com sucesso
+            # Deduct usage upon successful execution
             if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
                 st.session_state.uses_left -= 1
             elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
                 st.session_state.quota_left -= 1
 
-            # Geração do PDF com Branding Profissional e Cores Tech
+            # Professional PDF Generation
             class PDF(FPDF):
                 def header(self):
                     self.set_fill_color(17, 24, 39)
@@ -267,7 +280,7 @@ if st.session_state.run_clicked:
                 
                 pdf.set_font("Arial", 'B', 11)
                 pdf.set_text_color(17, 24, 39)
-                pdf.cell(0, 8, 'Dados Limpos Processados:', 0, 1, 'L')
+                pdf.cell(0, 8, 'Processed Clean Data:', 0, 1, 'L')
                 pdf.ln(2)
 
                 pdf.set_font("Arial", size=9.5)
@@ -295,12 +308,12 @@ if st.session_state.run_clicked:
             excel_data = create_excel(processed_text)
 
             st.markdown("---")
-            st.subheader("4. Exportar Relatórios Limpos:")
+            st.subheader("4. Export Clean Reports:")
             
             col_dl1, col_dl2 = st.columns(2)
             with col_dl1:
                 st.download_button(
-                    label="📥 Baixar Relatório PDF",
+                    label="📥 Download PDF Report",
                     data=pdf_data,
                     file_name="jsp_clean_report.pdf",
                     mime="application/pdf"
@@ -308,12 +321,12 @@ if st.session_state.run_clicked:
 
             with col_dl2:
                 st.download_button(
-                    label="📊 Baixar Planilha Excel",
+                    label="📊 Download Excel Spreadsheet",
                     data=excel_data,
                     file_name="jsp_clean_data.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
 
-# Rodapé Final
+# Final Footer
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #6b7280; font-size: 12px;'>JSP DataClean PDF & Excel Tools &bull; Powered by JSP Technology &bull; Secure Client-Side Processing</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 12px;'>JSP DataClean PDF & Excel Tools &bull; Powered by JSP Technology &bull; Secure Client-Side Processing</p>", unsafe_allow_html=True)
