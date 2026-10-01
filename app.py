@@ -1,10 +1,10 @@
 import streamlit as st
 from fpdf import FPDF
 import pandas as pd
-from datetime import datetime, timedelta
-import re
+from datetime import datetime
+import base64
 
-# Configuração da Página (Modo Escuro / Wide Layout)
+# Configuração da Página (Modo Dark Tech / Wide Layout)
 st.set_page_config(
     page_title="JSP DataClean PDF & Excel Tools",
     page_icon="⚡",
@@ -12,60 +12,85 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilização CSS Personalizada para o Padrão Visual JSP Technology
+# Estilização CSS Avançada - Tema Dark Tech & Rede Neural (JSP Technology Style)
 st.markdown("""
     <style>
     .main {
-        background-color: #0e1117;
-        color: #ffffff;
+        background-color: #0b0f17;
+        color: #e2e8f0;
+        font-family: 'Inter', sans-serif;
+    }
+    .stApp {
+        background: linear-gradient(135deg, #0b0f17 0%, #111827 50%, #0f172a 100%);
     }
     .stTextArea textarea {
-        background-color: #1a1c24;
-        color: #ffffff;
-        border: 1px solid #30363d;
-        border-radius: 8px;
+        background-color: #131d31 !important;
+        color: #ffffff !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 10px !important;
+        font-family: monospace !important;
+        font-size: 14px !important;
+    }
+    .stTextArea textarea:focus {
+        border-color: #22c55e !important;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.2) !important;
     }
     .stButton button {
-        background-color: #238636;
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
         color: white;
-        border-radius: 8px;
-        font-weight: bold;
-        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        border: 1px solid #22c55e;
         width: 100%;
-        padding: 10px;
+        padding: 12px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        transition: all 0.3s ease;
     }
     .stButton button:hover {
-        background-color: #2ea043;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        box-shadow: 0 6px 16px rgba(34, 197, 94, 0.5);
+        border-color: #4ade80;
+    }
+    .stExpander {
+        background-color: #111827 !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 10px !important;
     }
     .stAlert {
-        background-color: #1a1c24;
-        color: #ffffff;
+        background-color: #111827 !important;
+        color: #ffffff !important;
+        border: 1px solid #1e293b !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Inicialização do Estado da Sessão para Controle de Cotas
+# Inicialização do Estado da Sessão
 if 'uses_left' not in st.session_state:
     st.session_state.uses_left = 2
 if 'plan_type' not in st.session_state:
     st.session_state.plan_type = "Free"
 if 'quota_left' not in st.session_state:
     st.session_state.quota_left = 0
+if 'run_clicked' not in st.session_state:
+    st.session_state.run_clicked = False
 
-# Cabeçalho Visual Corporativo JSP na Página Principal
+# Cabeçalho Visual Corporativo JSP (Inspirado no Design Dark Tech)
 st.markdown("""
-    <div style="display: flex; align-items: center; background-color: #1a1c24; padding: 16px 20px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 25px;">
-        <div style="background-color: #0f172a; color: #ffffff; font-weight: bold; padding: 10px 16px; border-radius: 6px; font-size: 18px; margin-right: 18px; letter-spacing: 1px;">JSP</div>
+    <div style="display: flex; align-items: center; background: linear-gradient(90deg, #111827 0%, #1f2937 100%); padding: 20px 24px; border-radius: 12px; border: 1px solid #374151; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+        <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #ffffff; font-weight: 900; padding: 12px 18px; border-radius: 8px; font-size: 20px; margin-right: 20px; letter-spacing: 1.5px; border: 1px solid #4b5563; display: flex; align-items: center; gap: 8px;">
+            <span style="color: #22c55e;">●</span> JSP
+        </div>
         <div>
-            <div style="font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.5px;">JSP TECHNOLOGY</div>
-            <div style="font-size: 12px; color: #8b949e; margin-top: 2px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
+            <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.8px;">JSP TECHNOLOGY</div>
+            <div style="font-size: 13px; color: #9ca3af; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("Clean messy text lists, remove duplicates, format data, and instantly export professional clean reports to **PDF** or **Excel**. Free, fast, and 100% private.")
+st.markdown("<p style='color: #9ca3af; font-size: 15px; margin-bottom: 20px;'>Clean messy text lists, remove duplicates, format data instantly, and export professional reports to **PDF** or **Excel**.</p>", unsafe_allow_html=True)
 
-# Seção de Ativação / Planos (Incluindo o Coffee Pass)
+# Seção de Ativação / Planos (Incluindo Coffee Pass e Recargas)
 with st.expander("🔑 JSP Technology Plans & License Activation", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
     if st.session_state.plan_type != "Free":
         st.success(f"✅ **Active Plan: {st.session_state.plan_type}** | Operations Remaining: {st.session_state.quota_left}")
@@ -78,12 +103,15 @@ with st.expander("🔑 JSP Technology Plans & License Activation", expanded=(st.
         """)
         
         license_input = st.text_input("Enter your JSP License Key / Coffee Pass Code:", type="password", placeholder="JSP-COFFEE-XXXX or JSP-PRO-XXXX")
-        if st.button("Activate Code"):
+        if st.button("Activate Code / Recharge"):
             key = license_input.strip().upper()
             if key.startswith("JSP-COFFEE"):
-                st.session_state.plan_type = "Coffee Pass (5 Ops)"
-                st.session_state.quota_left = 5
-                st.success("☕ Coffee Pass activated! Enjoy 5 batch operations.")
+                if st.session_state.plan_type == "Free":
+                    st.session_state.plan_type = "Coffee Pass (5 Ops)"
+                    st.session_state.quota_left = 5
+                else:
+                    st.session_state.quota_left += 5  # Sistema de Recarga Avulsa
+                st.success("☕ Coffee Pass activated/recharged successfully (+5 operations added)!")
                 st.rerun()
             elif key.startswith("JSP-MONTHLY"):
                 st.session_state.plan_type = "Monthly Pro"
@@ -119,6 +147,14 @@ with col2:
     trim_spaces = st.checkbox("Trim Extra Spaces", value=True)
     sort_alpha = st.checkbox("Sort Alphabetically", value=False)
 
+st.markdown("---")
+
+# Botão Explícito de Execução da Tarefa
+run_button = st.button("⚡ Clean & Format Data Now")
+
+if run_button:
+    st.session_state.run_clicked = True
+
 # Função de Processamento do Texto
 def clean_text(text, dups, empty, trim, sort):
     if not text:
@@ -142,147 +178,144 @@ def clean_text(text, dups, empty, trim, sort):
         
     return "\n".join(lines)
 
-# Validação de Limites de Conteúdo e Acessos
-if raw_input_text:
-    lines_count = len(raw_input_text.splitlines())
-    chars_count = len(raw_input_text)
-    
-    limit_exceeded = False
-    error_message = ""
-    
-    # Se estiver no plano Free, aplica restrições estritas de tamanho e número de usos
-    if st.session_state.plan_type == "Free":
-        if lines_count > 50:
-            limit_exceeded = True
-            error_message = f"⚠️ **Free Tier Limit Exceeded:** Your input has {lines_count} lines (max 50). Get a **Coffee Pass** or Pro plan above for unlimited batch processing."
-        elif chars_count > 10000:
-            limit_exceeded = True
-            error_message = f"⚠️ **Free Tier Limit Exceeded:** Character limit (10,000) reached."
-        elif st.session_state.uses_left <= 0:
-            limit_exceeded = True
-            error_message = "🔒 **Free Trial Limit Reached:** You have used your 2 free sessions. Support our development by grabbing a **Coffee Pass ($3)** or a Pro plan above!"
+# Processamento e Exibição de Resultados
+if st.session_state.run_clicked:
+    if not raw_input_text:
+        st.warning("⚠️ Please paste some text in the box above before executing.")
     else:
-        # Se for plano pago (Coffee, Monthly, Annual), valida se ainda tem cota de operações
-        if st.session_state.quota_left <= 0:
-            limit_exceeded = True
-            error_message = f"🔒 **Plan Quota Exhausted:** You have used all operations in your {st.session_state.plan_type}. Please renew your pass."
-
-    if limit_exceeded:
-        st.markdown("---")
-        st.error(error_message)
-    else:
-        processed_text = clean_text(raw_input_text, remove_dups, remove_empty, trim_spaces, sort_alpha)
-
-        st.markdown("---")
-        st.subheader("3. Cleaned Results Preview:")
-        st.text_area("Result Output", value=processed_text, height=180, label_visibility="collapsed")
+        lines_count = len(raw_input_text.splitlines())
+        chars_count = len(raw_input_text)
         
-        original_lines = len(raw_input_text.splitlines())
-        final_lines = len(processed_text.splitlines()) if processed_text else 0
-        st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
-
-        # Geração do PDF com Branding Profissional e Logo Estilizada
-        class PDF(FPDF):
-            def header(self):
-                self.set_fill_color(15, 23, 42)
-                self.rect(10, 10, 15, 15, 'F')
-                self.set_font('Arial', 'B', 10)
-                self.set_text_color(255, 255, 255)
-                self.set_xy(10, 13.5)
-                self.cell(15, 8, 'JSP', 0, 0, 'C')
-
-                self.set_xy(28, 10)
-                self.set_font('Arial', 'B', 13)
-                self.set_text_color(15, 23, 42)
-                self.cell(100, 6, 'JSP TECHNOLOGY', 0, 1, 'L')
-                
-                self.set_xy(28, 16)
-                self.set_font('Arial', '', 8)
-                self.set_text_color(100, 116, 139)
-                self.cell(100, 4, 'DataClean Utility Suite | Certified Clean Report', 0, 1, 'L')
-                
-                self.set_draw_color(226, 232, 240)
-                self.set_line_width(0.6)
-                self.line(10, 28, 200, 28)
-                self.ln(12)
-
-            def footer(self):
-                self.set_y(-20)
-                self.set_draw_color(226, 232, 240)
-                self.set_line_width(0.4)
-                self.line(10, 277, 200, 277)
-                
-                self.set_y(-15)
-                self.set_font('Arial', 'B', 8)
-                self.set_text_color(100, 116, 139)
-                self.cell(0, 5, 'Powered by JSP Technology - Global Digital Solutions', 0, 1, 'C')
-                
-                self.set_font('Arial', '', 7)
-                self.set_text_color(148, 163, 184)
-                self.cell(0, 4, f'Page {self.page_no()} | Secure Client-Side Processing', 0, 0, 'C')
-
-        def create_pdf(text_content):
-            pdf = PDF()
-            pdf.add_page()
-            
-            pdf.set_font("Arial", 'B', 11)
-            pdf.set_text_color(15, 23, 42)
-            pdf.cell(0, 8, 'Processed Clean Data Output:', 0, 1, 'L')
-            pdf.ln(2)
-
-            pdf.set_font("Arial", size=9.5)
-            pdf.set_text_color(51, 65, 85)
-            
-            safe_text = text_content.encode('latin-1', 'replace').decode('latin-1')
-            for line in safe_text.splitlines():
-                if pdf.get_y() > 260:
-                    pdf.add_page()
-                pdf.cell(0, 6.5, line, ln=True)
-                
-            return bytes(pdf.output())
-
-        def create_excel(text_content):
-            lines = text_content.splitlines() if text_content else []
-            df = pd.DataFrame(lines, columns=["Cleaned Data"])
-            
-            from io import BytesIO
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df.to_excel(writer, index=False, sheet_name='JSP Clean Data')
-            return output.getvalue()
-
-        pdf_data = create_pdf(processed_text)
-        excel_data = create_excel(processed_text)
-
-        st.markdown("---")
-        st.subheader("4. Export Clean Reports:")
+        limit_exceeded = False
+        error_message = ""
         
-        col_dl1, col_dl2 = st.columns(2)
-        with col_dl1:
-            if st.download_button(
-                label="📥 Download PDF Report",
-                data=pdf_data,
-                file_name="jsp_clean_report.pdf",
-                mime="application/pdf"
-            ):
-                # Desconta o uso dependendo do plano ativo
-                if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
-                    st.session_state.uses_left -= 1
-                elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
-                    st.session_state.quota_left -= 1
+        if st.session_state.plan_type == "Free":
+            if lines_count > 50:
+                limit_exceeded = True
+                error_message = f"⚠️ **Free Tier Limit Exceeded:** Your input has {lines_count} lines (max 50). Get a **Coffee Pass ($3)** above to unlock batch processing."
+            elif chars_count > 10000:
+                limit_exceeded = True
+                error_message = f"⚠️ **Free Tier Limit Exceeded:** Character limit (10,000) reached."
+            elif st.session_state.uses_left <= 0:
+                limit_exceeded = True
+                error_message = "🔒 **Free Trial Limit Reached:** You have used your 2 free sessions. Support our development by grabbing a **Coffee Pass ($3)** above!"
+        else:
+            if st.session_state.quota_left <= 0:
+                limit_exceeded = True
+                error_message = f"🔒 **Plan Quota Exhausted:** You have used all operations in your {st.session_state.plan_type}. Enter a new Coffee Pass key above to recharge instantly!"
 
-        with col_dl2:
-            if st.download_button(
-                label="📊 Download Excel Spreadsheet",
-                data=excel_data,
-                file_name="jsp_clean_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            ):
-                if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
-                    st.session_state.uses_left -= 1
-                elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
-                    st.session_state.quota_left -= 1
+        if limit_exceeded:
+            st.error(error_message)
+        else:
+            processed_text = clean_text(raw_input_text, remove_dups, remove_empty, trim_spaces, sort_alpha)
 
-# Bloco de Rodapé / Identidade da Marca na Interface
+            st.subheader("3. Cleaned Results Preview:")
+            st.text_area("Result Output", value=processed_text, height=180, label_visibility="collapsed")
+            
+            original_lines = len(raw_input_text.splitlines())
+            final_lines = len(processed_text.splitlines()) if processed_text else 0
+            st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
+
+            # Desconta o uso ao executar com sucesso
+            if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
+                st.session_state.uses_left -= 1
+            elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
+                st.session_state.quota_left -= 1
+
+            # Geração do PDF com Branding Profissional e Cores Tech
+            class PDF(FPDF):
+                def header(self):
+                    self.set_fill_color(17, 24, 39)
+                    self.rect(10, 10, 15, 15, 'F')
+                    self.set_font('Arial', 'B', 10)
+                    self.set_text_color(34, 197, 94)
+                    self.set_xy(10, 13.5)
+                    self.cell(15, 8, 'JSP', 0, 0, 'C')
+
+                    self.set_xy(28, 10)
+                    self.set_font('Arial', 'B', 13)
+                    self.set_text_color(17, 24, 39)
+                    self.cell(100, 6, 'JSP TECHNOLOGY', 0, 1, 'L')
+                    
+                    self.set_xy(28, 16)
+                    self.set_font('Arial', '', 8)
+                    self.set_text_color(100, 116, 139)
+                    self.cell(100, 4, 'DataClean Utility Suite | Certified Clean Report', 0, 1, 'L')
+                    
+                    self.set_draw_color(203, 213, 225)
+                    self.set_line_width(0.6)
+                    self.line(10, 28, 200, 28)
+                    self.ln(12)
+
+                def footer(self):
+                    self.set_y(-20)
+                    self.set_draw_color(203, 213, 225)
+                    self.set_line_width(0.4)
+                    self.line(10, 277, 200, 277)
+                    
+                    self.set_y(-15)
+                    self.set_font('Arial', 'B', 8)
+                    self.set_text_color(100, 116, 139)
+                    self.cell(0, 5, 'Powered by JSP Technology - Global Digital Solutions', 0, 1, 'C')
+                    
+                    self.set_font('Arial', '', 7)
+                    self.set_text_color(148, 163, 184)
+                    self.cell(0, 4, f'Page {self.page_no()} | Secure Client-Side Processing', 0, 0, 'C')
+
+            def create_pdf(text_content):
+                pdf = PDF()
+                pdf.add_page()
+                
+                pdf.set_font("Arial", 'B', 11)
+                pdf.set_text_color(17, 24, 39)
+                pdf.cell(0, 8, 'Processed Clean Data Output:', 0, 1, 'L')
+                pdf.ln(2)
+
+                pdf.set_font("Arial", size=9.5)
+                pdf.set_text_color(51, 65, 85)
+                
+                safe_text = text_content.encode('latin-1', 'replace').decode('latin-1')
+                for line in safe_text.splitlines():
+                    if pdf.get_y() > 260:
+                        pdf.add_page()
+                    pdf.cell(0, 6.5, line, ln=True)
+                    
+                return bytes(pdf.output())
+
+            def create_excel(text_content):
+                lines = text_content.splitlines() if text_content else []
+                df = pd.DataFrame(lines, columns=["Cleaned Data"])
+                
+                from io import BytesIO
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False, sheet_name='JSP Clean Data')
+                return output.getvalue()
+
+            pdf_data = create_pdf(processed_text)
+            excel_data = create_excel(processed_text)
+
+            st.markdown("---")
+            st.subheader("4. Export Clean Reports:")
+            
+            col_dl1, col_dl2 = st.columns(2)
+            with col_dl1:
+                st.download_button(
+                    label="📥 Download PDF Report",
+                    data=pdf_data,
+                    file_name="jsp_clean_report.pdf",
+                    mime="application/pdf"
+                )
+
+            with col_dl2:
+                st.download_button(
+                    label="📊 Download Excel Spreadsheet",
+                    data=excel_data,
+                    file_name="jsp_clean_data.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
+# Rodapé Final
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #8b949e; font-size: 12px;'>JSP DataClean PDF & Excel Tools • Powered by JSP Technology • 100% Client-Side Privacy</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #6b7280; font-size: 12px;'>JSP DataClean PDF & Excel Tools &bull; Powered by JSP Technology &bull; Secure Client-Side Processing</p>", unsafe_allow_html=True)
+```eof
