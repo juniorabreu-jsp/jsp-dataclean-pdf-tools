@@ -1,6 +1,7 @@
 import streamlit as st
 from fpdf import FPDF
 import pandas as pd
+from datetime import datetime, timedelta
 import re
 
 # Configuração da Página (Modo Escuro / Wide Layout)
@@ -11,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilização CSS Personalizada para o Padrão Visual JSP Technology (Modo Escuro SaaS)
+# Estilização CSS Personalizada para o Padrão Visual JSP Technology
 st.markdown("""
     <style>
     .main {
@@ -43,13 +44,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inicialização do Estado da Sessão para Controle de Limites e Licença
+# Inicialização do Estado da Sessão para Controle de Cotas
 if 'uses_left' not in st.session_state:
     st.session_state.uses_left = 2
-if 'is_pro' not in st.session_state:
-    st.session_state.is_pro = False
+if 'plan_type' not in st.session_state:
+    st.session_state.plan_type = "Free"
+if 'quota_left' not in st.session_state:
+    st.session_state.quota_left = 0
 
-# Cabeçalho Visual Corporativo JSP na Página Principal (Logo + Título)
+# Cabeçalho Visual Corporativo JSP na Página Principal
 st.markdown("""
     <div style="display: flex; align-items: center; background-color: #1a1c24; padding: 16px 20px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 25px;">
         <div style="background-color: #0f172a; color: #ffffff; font-weight: bold; padding: 10px 16px; border-radius: 6px; font-size: 18px; margin-right: 18px; letter-spacing: 1px;">JSP</div>
@@ -62,20 +65,38 @@ st.markdown("""
 
 st.markdown("Clean messy text lists, remove duplicates, format data, and instantly export professional clean reports to **PDF** or **Excel**. Free, fast, and 100% private.")
 
-# Seção de Status de Licença / Pro
-with st.expander("🔑 JSP Technology License Activation (Pro Upgrade)", expanded=not st.session_state.is_pro):
-    if st.session_state.is_pro:
-        st.success("✅ **Pro License Active:** Unlimited batch processing and exports unlocked.")
+# Seção de Ativação / Planos (Incluindo o Coffee Pass)
+with st.expander("🔑 JSP Technology Plans & License Activation", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
+    if st.session_state.plan_type != "Free":
+        st.success(f"✅ **Active Plan: {st.session_state.plan_type}** | Operations Remaining: {st.session_state.quota_left}")
     else:
-        st.info(f"💡 **Free Tier:** {st.session_state.uses_left} free uses remaining (Max 50 lines / 10,000 chars per run).")
-        license_input = st.text_input("Enter your JSP License Key:", type="password", placeholder="JSP-PRO-XXXX-XXXX")
-        if st.button("Activate License"):
-            if license_input.startswith("JSP-PRO") and len(license_input) > 10:
-                st.session_state.is_pro = True
-                st.success("License activated successfully! Enjoy unlimited access.")
+        st.info(f"💡 **Free Tier:** {st.session_state.uses_left} free uses remaining (Max 50 lines / 10,000 chars).")
+        st.markdown("""
+            *☕ **Coffee Pass ($3):** 5 instant operations (No subscription).*  
+            *📅 **Monthly Pro ($9):** 20 operations/month.*  
+            *⭐ **Annual Pro ($49):** 50 operations/month.*  
+        """)
+        
+        license_input = st.text_input("Enter your JSP License Key / Coffee Pass Code:", type="password", placeholder="JSP-COFFEE-XXXX or JSP-PRO-XXXX")
+        if st.button("Activate Code"):
+            key = license_input.strip().upper()
+            if key.startswith("JSP-COFFEE"):
+                st.session_state.plan_type = "Coffee Pass (5 Ops)"
+                st.session_state.quota_left = 5
+                st.success("☕ Coffee Pass activated! Enjoy 5 batch operations.")
+                st.rerun()
+            elif key.startswith("JSP-MONTHLY"):
+                st.session_state.plan_type = "Monthly Pro"
+                st.session_state.quota_left = 20
+                st.success("📅 Monthly Pro activated! 20 operations available.")
+                st.rerun()
+            elif key.startswith("JSP-ANNUAL"):
+                st.session_state.plan_type = "Annual Pro"
+                st.session_state.quota_left = 50
+                st.success("⭐ Annual Pro activated! 50 operations available.")
                 st.rerun()
             else:
-                st.error("Invalid license key. Please check your purchase receipt.")
+                st.error("Invalid key. Please check your purchase receipt from JSP Technology.")
 
 st.markdown("---")
 
@@ -121,7 +142,7 @@ def clean_text(text, dups, empty, trim, sort):
         
     return "\n".join(lines)
 
-# Validação de Limites de Conteúdo e Acessos Gratuitos
+# Validação de Limites de Conteúdo e Acessos
 if raw_input_text:
     lines_count = len(raw_input_text.splitlines())
     chars_count = len(raw_input_text)
@@ -129,16 +150,22 @@ if raw_input_text:
     limit_exceeded = False
     error_message = ""
     
-    if not st.session_state.is_pro:
+    # Se estiver no plano Free, aplica restrições estritas de tamanho e número de usos
+    if st.session_state.plan_type == "Free":
         if lines_count > 50:
             limit_exceeded = True
-            error_message = f"⚠️ **Free Tier Limit Exceeded:** Your input has {lines_count} lines. Free tier allows up to 50 lines per run. Please activate a Pro License above for unlimited batch processing."
+            error_message = f"⚠️ **Free Tier Limit Exceeded:** Your input has {lines_count} lines (max 50). Get a **Coffee Pass** or Pro plan above for unlimited batch processing."
         elif chars_count > 10000:
             limit_exceeded = True
-            error_message = f"⚠️ **Free Tier Limit Exceeded:** Your input has {chars_count} characters. Free tier allows up to 10,000 characters."
+            error_message = f"⚠️ **Free Tier Limit Exceeded:** Character limit (10,000) reached."
         elif st.session_state.uses_left <= 0:
             limit_exceeded = True
-            error_message = "🔒 **Free Trial Limit Reached:** You have used your 2 free processing sessions. Please enter a valid JSP Technology License Key above to continue."
+            error_message = "🔒 **Free Trial Limit Reached:** You have used your 2 free sessions. Support our development by grabbing a **Coffee Pass ($3)** or a Pro plan above!"
+    else:
+        # Se for plano pago (Coffee, Monthly, Annual), valida se ainda tem cota de operações
+        if st.session_state.quota_left <= 0:
+            limit_exceeded = True
+            error_message = f"🔒 **Plan Quota Exhausted:** You have used all operations in your {st.session_state.plan_type}. Please renew your pass."
 
     if limit_exceeded:
         st.markdown("---")
@@ -238,8 +265,11 @@ if raw_input_text:
                 file_name="jsp_clean_report.pdf",
                 mime="application/pdf"
             ):
-                if not st.session_state.is_pro and st.session_state.uses_left > 0:
+                # Desconta o uso dependendo do plano ativo
+                if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
                     st.session_state.uses_left -= 1
+                elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
+                    st.session_state.quota_left -= 1
 
         with col_dl2:
             if st.download_button(
@@ -248,8 +278,10 @@ if raw_input_text:
                 file_name="jsp_clean_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             ):
-                if not st.session_state.is_pro and st.session_state.uses_left > 0:
+                if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
                     st.session_state.uses_left -= 1
+                elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
+                    st.session_state.quota_left -= 1
 
 # Bloco de Rodapé / Identidade da Marca na Interface
 st.markdown("---")
