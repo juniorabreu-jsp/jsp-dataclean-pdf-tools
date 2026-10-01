@@ -34,14 +34,6 @@ st.markdown("""
     .stButton button:hover {
         background-color: #2ea043;
     }
-    .ads-container {
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #161b22;
-        border: 1px dashed #30363d;
-        border-radius: 8px;
-        text-align: center;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -106,7 +98,7 @@ if raw_input_text:
     final_lines = len(processed_text.splitlines()) if processed_text else 0
     st.caption(f"📊 Stats: {original_lines} original lines processed $\rightarrow$ {final_lines} clean lines ready.")
 
-    # Geração do PDF corrigida
+    # Geração do PDF com saída em bytes garantida
     class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 12)
@@ -124,8 +116,8 @@ if raw_input_text:
         safe_text = text_content.encode('latin-1', 'replace').decode('latin-1')
         for line in safe_text.splitlines():
             pdf.cell(0, 6, line, ln=True)
-        # Correção para retornar os bytes corretamente na v2 do fpdf2
-        return pdf.output()
+        # Retorna o PDF gerado diretamente como bytes compatíveis com o botão de download
+        return pdf.output(dest='S').encode('latin1')
 
     pdf_data = create_pdf(processed_text)
 
