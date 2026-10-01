@@ -85,16 +85,14 @@ if 'generated_keys_db' not in st.session_state:
 if 'admin_logged' not in st.session_state:
     st.session_state.admin_logged = False
 
-# Navigation / Sidebar Selector for Admin Panel
-st.sidebar.markdown("### 🛡️ JSP Navigation")
-app_mode = st.sidebar.radio("Select View:", ["App Client View", "Admin Control Panel (Keys & Alerts)"])
+# Verifica se o link secreto foi acionado via URL (ex: ?admin=true)
+query_params = st.query_params
+is_admin_url = query_params.get("admin") == "true"
 
-# ==========================================
-# ADMIN CONTROL PANEL
-# ==========================================
-if app_mode == "Admin Control Panel (Keys & Alerts)":
+# Se o usuário estiver na URL secreta do admin
+if is_admin_url:
     st.markdown("## 🔐 JSP Technology - Master Admin Panel")
-    st.markdown("Gerencie licenças de clientes, crie chaves personalizadas (incluindo vitalícias para você e convidados) e configure os alertas.")
+    st.markdown("Painel administrativo restrito. Gere chaves vitalícias, gerencie planos e configure alertas de vendas.")
     
     if not st.session_state.admin_logged:
         admin_pass = st.text_input("Digite a Senha Master do Admin:", type="password", placeholder="Senha padrão: jsp2026admin")
@@ -107,7 +105,7 @@ if app_mode == "Admin Control Panel (Keys & Alerts)":
                 st.error("❌ Senha master incorreta.")
     else:
         st.success("✅ Autenticado como Administrador Master")
-        if st.button("Sair do Painel"):
+        if st.button("Sair / Fechar Painel Admin"):
             st.session_state.admin_logged = False
             st.rerun()
             
@@ -142,7 +140,7 @@ if app_mode == "Admin Control Panel (Keys & Alerts)":
             }
             st.success(f"🎉 Chave gerada com sucesso: **`{new_key}`** ({plan_selection})")
             if "Vitalícia" in plan_selection:
-                st.info("🌟 Chave vitalícia criada! Você pode usá-la para você mesmo ou repassar para quem desejar acesso permanente.")
+                st.info("🌟 Chave vitalícia criada! Utilize para você ou envie para quem desejar acesso permanente.")
             else:
                 st.info(f"Copie esta chave e envie para o seu cliente.")
 
@@ -160,14 +158,11 @@ if app_mode == "Admin Control Panel (Keys & Alerts)":
         
         # TAB 2: WhatsApp & Email Alert Simulator / Config
         st.markdown("### 📱 2. Configuração de Alertas de Vendas (WhatsApp & E-mail)")
-        st.markdown("Configure para onde o alerta de nova venda será enviado.")
-        
         with st.form("alert_config_form"):
             admin_whatsapp = st.text_input("Seu Número do WhatsApp (com DDI e DDD):", value="5585920025390")
             admin_email = st.text_input("Seu E-mail de Notificação:", value="contato@jsptechnology.com")
             test_buyer_email = st.text_input("Simular E-mail do Comprador:", value="cliente@exemplo.com")
             test_plan_bought = st.selectbox("Simular Plano Adquirido:", ["Coffee Pass ($3)", "Monthly Pro ($9)", "Annual Pro ($49)", "Vitalícia / Permanente"])
-            
             test_generated_key = st.text_input("Simular Chave Gerada para o Cliente:", value="JSP-LIFETIME-A1B2C3")
             
             submit_alert_test = st.form_submit_button("🔔 Simular / Disparar Alerta para o WhatsApp")
@@ -179,21 +174,20 @@ if app_mode == "Admin Control Panel (Keys & Alerts)":
                     f"• *Chave Gerada:* `{test_generated_key}`\n"
                     f"• *Comprador:* {test_buyer_email}\n"
                     f"• *Data:* {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
-                    f"🔐 *Seus Dados de Acesso ao Painel Admin:*\n"
-                    f"• Link: http://localhost:8501\n"
-                    f"• Senha Master: `jsp2026admin`\n\n"
-                    f"⚠️ *Nota para o Envio:* Temos um prazo de até 24h para envio devido ao fuso horário."
+                    f"🔐 *Acesso ao Painel Admin:*\n"
+                    f"• Link: http://localhost:8501/?admin=true\n"
+                    f"• Senha Master: `jsp2026admin`"
                 )
                 
                 encoded_msg = urllib.parse.quote(alert_msg)
                 wa_url = f"https://api.whatsapp.com/send?phone={admin_whatsapp}&text={encoded_msg}"
                 
-                st.success("✅ Alerta estruturado em português com sucesso!")
-                st.markdown(f"👉 **[Clique aqui para disparar o Alerta no seu WhatsApp]({wa_url})** (Abre o chat com a mensagem pronta contendo a chave, link e senha).")
+                st.success("✅ Alerta estruturado com sucesso!")
+                st.markdown(f"👉 **[Clique aqui para disparar o Alerta no seu WhatsApp]({wa_url})**")
                 st.info(f"📧 E-mail de notificação enviado para: **{admin_email}**")
 
 # ==========================================
-# CLIENT APP VIEW
+# CLIENT APP VIEW (VISÃO NORMAL DO CLIENTE)
 # ==========================================
 else:
     # JSP Commercial Corporate Header
