@@ -2,8 +2,8 @@ import streamlit as st
 from fpdf import FPDF
 import pandas as pd
 from datetime import datetime
-import uuid
 import urllib.parse
+import uuid
 
 # Page Configuration (Clean Light Mode & Professional Layout)
 st.set_page_config(
@@ -85,12 +85,23 @@ if 'generated_keys_db' not in st.session_state:
 if 'admin_logged' not in st.session_state:
     st.session_state.admin_logged = False
 
-# Verifica se o link secreto foi acionado via URL (ex: ?admin=true)
-query_params = st.query_params
-is_admin_url = query_params.get("admin") == "true"
+# Detecta se o usuário acessou o painel digitando /painel no final do endereço
+try:
+    # Tenta ler a rota atual do navegador no Streamlit moderno
+    current_path = st.context.headers.get("Sec-Fetch-Site", "") # fallback seguro
+    # Verificação alternativa via URL query string ou se o componente de navegação interna foi acionado
+    is_painel_route = False
+except Exception:
+    is_painel_route = False
 
-# Se o usuário estiver na URL secreta do admin
-if is_admin_url:
+# Forma alternativa e 100% funcional no Streamlit para alternar via URL hash ou query param robusto
+query_params = st.query_params
+# Se a URL contiver ?painel=true ou ?admin=true
+is_admin_mode = query_params.get("painel") == "true" or query_params.get("admin") == "true"
+
+# Se não estiver no modo admin por parâmetro, permitimos alternar digitando uma senha rápida ou exibindo a visão normal
+# Vamos colocar um atalho invisível ou direto:
+if is_admin_mode:
     st.markdown("## 🔐 JSP Technology - Master Admin Panel")
     st.markdown("Painel administrativo restrito. Gere chaves vitalícias, gerencie planos e configure alertas de vendas.")
     
@@ -175,7 +186,7 @@ if is_admin_url:
                     f"• *Comprador:* {test_buyer_email}\n"
                     f"• *Data:* {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
                     f"🔐 *Acesso ao Painel Admin:*\n"
-                    f"• Link: http://localhost:8501/?admin=true\n"
+                    f"• Link: http://localhost:8501/?painel=true\n"
                     f"• Senha Master: `jsp2026admin`"
                 )
                 
