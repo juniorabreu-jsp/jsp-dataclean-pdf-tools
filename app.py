@@ -85,22 +85,11 @@ if 'generated_keys_db' not in st.session_state:
 if 'admin_logged' not in st.session_state:
     st.session_state.admin_logged = False
 
-# Detecta se o usuário acessou o painel digitando /painel no final do endereço
-try:
-    # Tenta ler a rota atual do navegador no Streamlit moderno
-    current_path = st.context.headers.get("Sec-Fetch-Site", "") # fallback seguro
-    # Verificação alternativa via URL query string ou se o componente de navegação interna foi acionado
-    is_painel_route = False
-except Exception:
-    is_painel_route = False
-
-# Forma alternativa e 100% funcional no Streamlit para alternar via URL hash ou query param robusto
+# Captura parâmetros da URL para alternar o modo Admin de forma limpa
 query_params = st.query_params
-# Se a URL contiver ?painel=true ou ?admin=true
 is_admin_mode = query_params.get("painel") == "true" or query_params.get("admin") == "true"
 
-# Se não estiver no modo admin por parâmetro, permitimos alternar digitando uma senha rápida ou exibindo a visão normal
-# Vamos colocar um atalho invisível ou direto:
+# Se estiver no modo admin
 if is_admin_mode:
     st.markdown("## 🔐 JSP Technology - Master Admin Panel")
     st.markdown("Painel administrativo restrito. Gere chaves vitalícias, gerencie planos e configure alertas de vendas.")
@@ -118,6 +107,8 @@ if is_admin_mode:
         st.success("✅ Autenticado como Administrador Master")
         if st.button("Sair / Fechar Painel Admin"):
             st.session_state.admin_logged = False
+            # Remove o parâmetro da URL ao sair para retornar limpo
+            st.query_params.clear()
             st.rerun()
             
         st.markdown("---")
@@ -186,7 +177,6 @@ if is_admin_mode:
                     f"• *Comprador:* {test_buyer_email}\n"
                     f"• *Data:* {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
                     f"🔐 *Acesso ao Painel Admin:*\n"
-                    f"• Link: http://localhost:8501/?painel=true\n"
                     f"• Senha Master: `jsp2026admin`"
                 )
                 
@@ -442,6 +432,12 @@ else:
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
 
-    # Professional Commercial Footer
+    # Professional Commercial Footer com Atalho Ultra-Discreto para o Admin
     st.markdown("---")
-    st.markdown("<p style='text-align: center; color: #64748b; font-size: 12px; font-weight: 500;'>JSP DataClean Utility Suite &bull; Powered by JSP Technology &bull; Secure Enterprise Data Solutions</p>", unsafe_allow_html=True)
+    st.markdown(
+        "<p style='text-align: center; color: #94a3b8; font-size: 11px; font-weight: 400;'>"
+        "JSP DataClean Utility Suite &bull; Powered by JSP Technology &bull; "
+        "<a href='/?painel=true' target='_self' style='color: #94a3b8; text-decoration: none;'>Secure Enterprise Solutions</a>"
+        "</p>", 
+        unsafe_allow_html=True
+    )
