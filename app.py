@@ -96,9 +96,9 @@ if raw_input_text:
     # Métricas rápidas
     original_lines = len(raw_input_text.splitlines())
     final_lines = len(processed_text.splitlines()) if processed_text else 0
-    st.caption(f"📊 Stats: {original_lines} original lines processed $\rightarrow$ {final_lines} clean lines ready.")
+    st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
 
-    # Geração do PDF com saída em bytes garantida
+    # Geração do PDF com tratamento robusto para bytes
     class PDF(FPDF):
         def header(self):
             self.set_font('Arial', 'B', 12)
@@ -113,11 +113,12 @@ if raw_input_text:
         pdf = PDF()
         pdf.add_page()
         pdf.set_font("Arial", size=10)
+        # Substitui caracteres problemáticos para evitar falhas de codificação no FPDF padrão
         safe_text = text_content.encode('latin-1', 'replace').decode('latin-1')
         for line in safe_text.splitlines():
             pdf.cell(0, 6, line, ln=True)
-        # Retorna o PDF gerado diretamente como bytes compatíveis com o botão de download
-        return pdf.output(dest='S').encode('latin1')
+        # Retorna diretamente os bytes convertidos do bytearray do fpdf2
+        return bytes(pdf.output())
 
     pdf_data = create_pdf(processed_text)
 
