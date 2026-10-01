@@ -1,136 +1,195 @@
-import streamlit as st
-from fpdf import FPDF
-import re
+import os
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.pdfgen import canvas
 
-# Configuração da Página (Modo Escuro / Wide Layout)
-st.set_page_config(
-    page_title="JSP DataClean PDF Tools",
-    page_icon="⚡",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+class NumberedCanvas(canvas.Canvas):
+    """ Canvas customizado para adicionar número de páginas e rodapé profissional em todas as folhas """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
 
-# Estilização CSS Personalizada para o Modo Escuro Padrão JSP
-st.markdown("""
-    <style>
-    .main {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    .stTextArea textarea {
-        background-color: #1a1c24;
-        color: #ffffff;
-        border: 1px solid #30363d;
-        border-radius: 8px;
-    }
-    .stButton button {
-        background-color: #238636;
-        color: white;
-        border-radius: 8px;
-        font-weight: bold;
-        border: none;
-        width: 100%;
-    }
-    .stButton button:hover {
-        background-color: #2ea043;
-    }
-    </style>
-""", unsafe_allow_html=True)
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
 
-# Título Principal com a Marca JSP
-st.title("⚡ JSP DataClean PDF Tools")
-st.markdown("Clean messy text lists, remove duplicates, format data, and instantly export professional clean reports to **PDF**. Free, fast, and 100% private.")
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_decorations(num_pages)
+            super().showPage()
+        super().save()
 
-st.markdown("---")
-
-# Área de Entrada de Dados
-st.subheader("1. Paste Your Raw Data / Text Below:")
-raw_input_text = st.text_area(
-    "Raw Data Input",
-    height=180,
-    placeholder="Paste your messy lists, emails, numbers, or unformatted text here...",
-    label_visibility="collapsed"
-)
-
-# Opções de Limpeza (Filtros)
-st.subheader("2. Select Cleaning Options:")
-col1, col2 = st.columns(2)
-with col1:
-    remove_dups = st.checkbox("Remove Duplicate Lines", value=True)
-    remove_empty = st.checkbox("Remove Empty Lines", value=True)
-with col2:
-    trim_spaces = st.checkbox("Trim Extra Spaces", value=True)
-    sort_alpha = st.checkbox("Sort Alphabetically", value=False)
-
-# Função de Processamento do Texto
-def clean_text(text, dups, empty, trim, sort):
-    if not text:
-        return ""
-    lines = text.splitlines()
-    
-    if trim:
-        lines = [line.strip() for line in lines]
-    if empty:
-        lines = [line for line in lines if line != ""]
-    if dups:
-        seen = set()
-        unique_lines = []
-        for line in lines:
-            if line not in seen:
-                seen.add(line)
-                unique_lines.append(line)
-        lines = unique_lines
-    if sort:
-        lines.sort()
+    def draw_page_decorations(self, page_count):
+        self.saveState()
+        self.setFont("Helvetica", 8)
+        self.setFillColor(colors.HexColor("#718096"))
         
-    return "\n".join(lines)
+        # Linha fina de rodapé
+        self.setStrokeColor(colors.HexColor("#E2E8F0"))
+        self.setLineWidth(0.5)
+        self.line(40, 40, A4[0] - 40, 40)
+        
+        # Texto de rodapé
+        footer_text = f"JSP Technology — Soluções Digitais | Página {self._pageNumber} de {page_count}"
+        self.drawString(40, 28, footer_text)
+        
+        self.restoreState()
 
-# Processar os dados se houver input
-processed_text = clean_text(raw_input_text, remove_dups, remove_empty, trim_spaces, sort_alpha)
-
-if raw_input_text:
-    st.markdown("---")
-    st.subheader("3. Cleaned Results Preview:")
-    st.text_area("Result Output", value=processed_text, height=180, label_visibility="collapsed")
-    
-    # Métricas rápidas
-    original_lines = len(raw_input_text.splitlines())
-    final_lines = len(processed_text.splitlines()) if processed_text else 0
-    st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
-
-    # Geração do PDF com tratamento robusto para bytes
-    class PDF(FPDF):
-        def header(self):
-            self.set_font('Arial', 'B', 12)
-            self.cell(0, 10, 'JSP DataClean - Official Clean Report', 0, 1, 'C')
-            self.ln(5)
-        def footer(self):
-            self.set_y(-15)
-            self.set_font('Arial', 'I', 8)
-            self.cell(0, 10, f'Generated automatically via JSP Technology Tools - Page {self.page_no()}', 0, 0, 'C')
-
-    def create_pdf(text_content):
-        pdf = PDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=10)
-        # Substitui caracteres problemáticos para evitar falhas de codificação no FPDF padrão
-        safe_text = text_content.encode('latin-1', 'replace').decode('latin-1')
-        for line in safe_text.splitlines():
-            pdf.cell(0, 6, line, ln=True)
-        # Retorna diretamente os bytes convertidos do bytearray do fpdf2
-        return bytes(pdf.output())
-
-    pdf_data = create_pdf(processed_text)
-
-    st.markdown("---")
-    st.subheader("4. Download Clean Report:")
-    st.download_button(
-        label="📥 Download Clean Report as PDF",
-        data=pdf_data,
-        file_name="jsp_clean_report.pdf",
-        mime="application/pdf"
+def gerar_pdf_jsp(nome_arquivo="relatorio_jsp_technology.pdf"):
+    # Configuração do documento (Margens confortáveis de 40pt)
+    doc = SimpleDocTemplate(
+        nome_arquivo,
+        pagesize=A4,
+        rightMargin=40,
+        leftMargin=40,
+        topMargin=50,
+        bottomMargin=50
     )
+    
+    story = []
+    
+    # Estilos tipográficos
+    styles = getSampleStyleSheet()
+    
+    # Paleta de Cores Profissional
+    primary_color = colors.HexColor("#0F172A")  # Azul escuro / Grafite profundo
+    accent_color = colors.HexColor("#10B981")   # Verde digital moderno
+    text_color = colors.HexColor("#334155")     # Cinza texto suave
+    card_bg = colors.HexColor("#F8FAFC")        # Fundo leve para blocos
+    
+    title_style = ParagraphStyle(
+        'DocTitle',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=20,
+        leading=24,
+        textColor=primary_color,
+        spaceAfter=4
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'DocSubtitle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=10,
+        leading=14,
+        textColor=accent_color,
+        spaceAfter=15
+    )
+    
+    h1_style = ParagraphStyle(
+        'Heading1_Custom',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=13,
+        leading=16,
+        textColor=primary_color,
+        spaceBefore=12,
+        spaceAfter=6
+    )
+    
+    body_style = ParagraphStyle(
+        'Body_Custom',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9.5,
+        leading=14,
+        textColor=text_color,
+        spaceAfter=8
+    )
+    
+    # --- CABEÇALHO / MARCA EM EVIDÊNCIA ---
+    header_data = [
+        [
+            Paragraph("<b>JSP</b><font color='#10B981'><b>.</b></font><b>Technology</b>", ParagraphStyle('Brand', fontName='Helvetica-Bold', fontSize=16, leading=18, textColor=primary_color)),
+            Paragraph("<b>RELATÓRIO TÉCNICO & EXECUTIVO</b><br/><font size=8 color='#718096'>Padrão de Qualidade SaaS 2026</font>", ParagraphStyle('Meta', fontName='Helvetica', fontSize=9, leading=12, alignment=2, textColor=text_color))
+        ]
+    ]
+    
+    header_table = Table(header_data, colWidths=[250, 265])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ('LINEBELOW', (0,0), (-1,-1), 1.5, primary_color),
+    ]))
+    
+    story.append(header_table)
+    story.append(Spacer(1, 15))
+    
+    # --- TÍTULO DO DOCUMENTO ---
+    story.append(Paragraph("Sumário Executivo e Diretrizes do Projeto", title_style))
+    story.append(Paragraph("Documentação gerada automaticamente com base na nova identidade visual unificada.", subtitle_style))
+    story.append(Spacer(1, 5))
+    
+    # --- BLOCO DE DESTAQUE (CARD) ---
+    intro_text = (
+        "Este documento consolida as especificações operacionais e os parâmetros de desenvolvimento "
+        "adotados pela <b>JSP Technology</b>. O layout foi rigorosamente desenhado para assegurar um "
+        "conforto visual ideal (evitando fadiga ocular), mantendo a marca corporativa em evidência de "
+        "forma sóbria, elegante e profissional."
+    )
+    
+    card_table = Table([[Paragraph(intro_text, body_style)]], colWidths=[515])
+    card_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), card_bg),
+        ('PADDING', (0,0), (-1,-1), 10),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E1")),
+        ('LINELEFT', (0,0), (-1,-1), 3.0, accent_color),
+    ]))
+    
+    story.append(card_table)
+    story.append(Spacer(1, 15))
+    
+    # --- SEÇÃO 1 ---
+    story.append(Paragraph("1. Diretrizes de Usabilidade e Conforto Visual", h1_style))
+    story.append(Paragraph(
+        "Para garantir que relatórios extensos não sejam exaustivos à leitura, empregamos uma paleta "
+        "composta por fundos neutros limpos, tipografia em cinza carvão de alta legibilidade (evitando o "
+        "preto puro contrastante excessivo) e acentos focados nas cores institucionais da marca.",
+        body_style
+    ))
+    
+    # --- SEÇÃO 2 ---
+    story.append(Paragraph("2. Parâmetros Técnicos e Arquitetura", h1_style))
+    
+    # Tabela de dados estruturados limpa
+    table_data = [
+        [Paragraph("<b>Componente</b>", body_style), Paragraph("<b>Especificação Técnica</b>", body_style), Paragraph("<b>Status</b>", body_style)],
+        [Paragraph("Identidade Visual", body_style), Paragraph("SaaS Moderno / Flat Minimalista", body_style), Paragraph("<font color='#10B981'><b>Ativo</b></font>", body_style)],
+        [Paragraph("Geração de Relatórios", body_style), Paragraph("ReportLab Core com Canvas Dinâmico", body_style), Paragraph("<font color='#10B981'><b>Homologado</b></font>", body_style)],
+        [Paragraph("Segurança & Licenciamento", body_style), Paragraph("Estrutura Portable / Módulo HWID", body_style), Paragraph("<font color='#10B981'><b>Operacional</b></font>", body_style)],
+    ]
+    
+    t = Table(table_data, colWidths=[130, 265, 120])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#F1F5F9")),
+        ('TEXTCOLOR', (0,0), (-1,0), primary_color),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('LEFTPADDING', (0,0), (-1,-1), 8),
+        ('RIGHTPADDING', (0,0), (-1,-1), 8),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+    ]))
+    
+    story.append(t)
+    story.append(Spacer(1, 15))
+    
+    # --- SEÇÃO 3 ---
+    story.append(Paragraph("3. Considerações Finais", h1_style))
+    story.append(Paragraph(
+        "A consistência visual reforça o posicionamento de mercado da JSP Technology como referência em "
+        "soluções digitais de alta performance. Este modelo de PDF pode ser integrado diretamente às "
+        "suas aplicações em Streamlit ou scripts de automação.",
+        body_style
+    ))
 
-# Bloco de Rodapé / Identidade da Marca
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: #8b949e; font-size: 12px;'>JSP DataClean PDF Tools • Powered by JSP Technology • 100% Client-Side Privacy</p>", unsafe_allow_html=True)
+    # Construir PDF
+    doc.build(story, canvasmaker=NumberedCanvas)
+    print(f"PDF gerado com sucesso: {nome_arquivo}")
+
+if __name__ == "__main__":
+    gerar_pdf_jsp()
