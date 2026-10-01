@@ -2,7 +2,6 @@ import streamlit as st
 from fpdf import FPDF
 import pandas as pd
 from datetime import datetime
-import base64
 
 # Configuração da Página (Modo Dark Tech / Wide Layout)
 st.set_page_config(
@@ -88,22 +87,22 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='color: #9ca3af; font-size: 15px; margin-bottom: 20px;'>Clean messy text lists, remove duplicates, format data instantly, and export professional reports to **PDF** or **Excel**.</p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #9ca3af; font-size: 15px; margin-bottom: 20px;'>Limpe listas de textos, remova duplicadas, formate dados instantaneamente e exporte relatórios profissionais em **PDF** ou **Excel**.</p>", unsafe_allow_html=True)
 
 # Seção de Ativação / Planos (Incluindo Coffee Pass e Recargas)
-with st.expander("🔑 JSP Technology Plans & License Activation", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
+with st.expander("🔑 Planos JSP Technology & Ativação de Licença", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
     if st.session_state.plan_type != "Free":
-        st.success(f"✅ **Active Plan: {st.session_state.plan_type}** | Operations Remaining: {st.session_state.quota_left}")
+        st.success(f"✅ **Plano Ativo: {st.session_state.plan_type}** | Operações Restantes: {st.session_state.quota_left}")
     else:
-        st.info(f"💡 **Free Tier:** {st.session_state.uses_left} free uses remaining (Max 50 lines / 10,000 chars).")
+        st.info(f"💡 **Plano Gratuito:** {st.session_state.uses_left} usos restantes (Máximo de 50 linhas / 10.000 caracteres).")
         st.markdown("""
-            *☕ **Coffee Pass ($3):** 5 instant operations (No subscription).*  
-            *📅 **Monthly Pro ($9):** 20 operations/month.*  
-            *⭐ **Annual Pro ($49):** 50 operations/month.*  
+            *☕ **Coffee Pass ($3):** 5 operações imediatas (Sem assinatura).*  
+            *📅 **Monthly Pro ($9):** 20 operações/mês.*  
+            *⭐ **Annual Pro ($49):** 50 operações/mês.*  
         """)
         
-        license_input = st.text_input("Enter your JSP License Key / Coffee Pass Code:", type="password", placeholder="JSP-COFFEE-XXXX or JSP-PRO-XXXX")
-        if st.button("Activate Code / Recharge"):
+        license_input = st.text_input("Insira sua Chave de Licença / Código Coffee Pass:", type="password", placeholder="JSP-COFFEE-XXXX ou JSP-PRO-XXXX")
+        if st.button("Ativar Código / Recarregar"):
             key = license_input.strip().upper()
             if key.startswith("JSP-COFFEE"):
                 if st.session_state.plan_type == "Free":
@@ -111,46 +110,46 @@ with st.expander("🔑 JSP Technology Plans & License Activation", expanded=(st.
                     st.session_state.quota_left = 5
                 else:
                     st.session_state.quota_left += 5  # Sistema de Recarga Avulsa
-                st.success("☕ Coffee Pass activated/recharged successfully (+5 operations added)!")
+                st.success("☕ Coffee Pass ativado/recarregado com sucesso (+5 operações adicionadas)!")
                 st.rerun()
             elif key.startswith("JSP-MONTHLY"):
                 st.session_state.plan_type = "Monthly Pro"
                 st.session_state.quota_left = 20
-                st.success("📅 Monthly Pro activated! 20 operations available.")
+                st.success("📅 Monthly Pro ativado! 20 operações disponíveis.")
                 st.rerun()
             elif key.startswith("JSP-ANNUAL"):
                 st.session_state.plan_type = "Annual Pro"
                 st.session_state.quota_left = 50
-                st.success("⭐ Annual Pro activated! 50 operations available.")
+                st.success("⭐ Annual Pro ativado! 50 operações disponíveis.")
                 st.rerun()
             else:
-                st.error("Invalid key. Please check your purchase receipt from JSP Technology.")
+                st.error("Chave inválida. Verifique o recibo de compra da JSP Technology.")
 
 st.markdown("---")
 
 # Área de Entrada de Dados
-st.subheader("1. Paste Your Raw Data / Text Below:")
+st.subheader("1. Cole seus dados ou texto bruto abaixo:")
 raw_input_text = st.text_area(
-    "Raw Data Input",
+    "Entrada de Dados Brutos",
     height=180,
-    placeholder="Paste your messy lists, emails, numbers, or unformatted text here...",
+    placeholder="Cole suas listas confusas, e-mails, números ou textos desformatados aqui...",
     label_visibility="collapsed"
 )
 
 # Opções de Limpeza (Filtros)
-st.subheader("2. Select Cleaning Options:")
+st.subheader("2. Selecione as Opções de Limpeza:")
 col1, col2 = st.columns(2)
 with col1:
-    remove_dups = st.checkbox("Remove Duplicate Lines", value=True)
-    remove_empty = st.checkbox("Remove Empty Lines", value=True)
+    remove_dups = st.checkbox("Remover Linhas Duplicadas", value=True)
+    remove_empty = st.checkbox("Remover Linhas Vazias", value=True)
 with col2:
-    trim_spaces = st.checkbox("Trim Extra Spaces", value=True)
-    sort_alpha = st.checkbox("Sort Alphabetically", value=False)
+    trim_spaces = st.checkbox("Remover Espaços Extras", value=True)
+    sort_alpha = st.checkbox("Ordenar Alfabeticamente", value=False)
 
 st.markdown("---")
 
 # Botão Explícito de Execução da Tarefa
-run_button = st.button("⚡ Clean & Format Data Now")
+run_button = st.button("⚡ Executar Limpeza e Formatação")
 
 if run_button:
     st.session_state.run_clicked = True
@@ -181,7 +180,7 @@ def clean_text(text, dups, empty, trim, sort):
 # Processamento e Exibição de Resultados
 if st.session_state.run_clicked:
     if not raw_input_text:
-        st.warning("⚠️ Please paste some text in the box above before executing.")
+        st.warning("⚠️ Por favor, cole algum texto na caixa acima antes de executar.")
     else:
         lines_count = len(raw_input_text.splitlines())
         chars_count = len(raw_input_text)
@@ -192,29 +191,29 @@ if st.session_state.run_clicked:
         if st.session_state.plan_type == "Free":
             if lines_count > 50:
                 limit_exceeded = True
-                error_message = f"⚠️ **Free Tier Limit Exceeded:** Your input has {lines_count} lines (max 50). Get a **Coffee Pass ($3)** above to unlock batch processing."
+                error_message = f"⚠️ **Limite do Plano Gratuito Excedido:** Seu texto possui {lines_count} linhas (máximo de 50). Adquira um **Coffee Pass ($3)** acima para desbloquear lotes maiores."
             elif chars_count > 10000:
                 limit_exceeded = True
-                error_message = f"⚠️ **Free Tier Limit Exceeded:** Character limit (10,000) reached."
+                error_message = f"⚠️ **Limite do Plano Gratuito Excedido:** Limite de 10.000 caracteres atingido."
             elif st.session_state.uses_left <= 0:
                 limit_exceeded = True
-                error_message = "🔒 **Free Trial Limit Reached:** You have used your 2 free sessions. Support our development by grabbing a **Coffee Pass ($3)** above!"
+                error_message = "🔒 **Limite Gratuito Esgotado:** Você utilizou seus 2 usos gratuitos. Apoie nosso desenvolvimento adquirindo um **Coffee Pass ($3)** acima!"
         else:
             if st.session_state.quota_left <= 0:
                 limit_exceeded = True
-                error_message = f"🔒 **Plan Quota Exhausted:** You have used all operations in your {st.session_state.plan_type}. Enter a new Coffee Pass key above to recharge instantly!"
+                error_message = f"🔒 **Cota do Plano Esgotada:** Suas operações no plano {st.session_state.plan_type} acabaram. Insira uma nova chave Coffee Pass acima para recarregar instantaneamente!"
 
         if limit_exceeded:
             st.error(error_message)
         else:
             processed_text = clean_text(raw_input_text, remove_dups, remove_empty, trim_spaces, sort_alpha)
 
-            st.subheader("3. Cleaned Results Preview:")
-            st.text_area("Result Output", value=processed_text, height=180, label_visibility="collapsed")
+            st.subheader("3. Pré-visualização dos Resultados Limpos:")
+            st.text_area("Resultado Processado", value=processed_text, height=180, label_visibility="collapsed")
             
             original_lines = len(raw_input_text.splitlines())
             final_lines = len(processed_text.splitlines()) if processed_text else 0
-            st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
+            st.caption(f"📊 Estatísticas: {original_lines} linhas originais processadas -> {final_lines} linhas limpas prontas.")
 
             # Desconta o uso ao executar com sucesso
             if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
@@ -268,7 +267,7 @@ if st.session_state.run_clicked:
                 
                 pdf.set_font("Arial", 'B', 11)
                 pdf.set_text_color(17, 24, 39)
-                pdf.cell(0, 8, 'Processed Clean Data Output:', 0, 1, 'L')
+                pdf.cell(0, 8, 'Dados Limpos Processados:', 0, 1, 'L')
                 pdf.ln(2)
 
                 pdf.set_font("Arial", size=9.5)
@@ -296,12 +295,12 @@ if st.session_state.run_clicked:
             excel_data = create_excel(processed_text)
 
             st.markdown("---")
-            st.subheader("4. Export Clean Reports:")
+            st.subheader("4. Exportar Relatórios Limpos:")
             
             col_dl1, col_dl2 = st.columns(2)
             with col_dl1:
                 st.download_button(
-                    label="📥 Download PDF Report",
+                    label="📥 Baixar Relatório PDF",
                     data=pdf_data,
                     file_name="jsp_clean_report.pdf",
                     mime="application/pdf"
@@ -309,7 +308,7 @@ if st.session_state.run_clicked:
 
             with col_dl2:
                 st.download_button(
-                    label="📊 Download Excel Spreadsheet",
+                    label="📊 Baixar Planilha Excel",
                     data=excel_data,
                     file_name="jsp_clean_data.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -318,4 +317,3 @@ if st.session_state.run_clicked:
 # Rodapé Final
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #6b7280; font-size: 12px;'>JSP DataClean PDF & Excel Tools &bull; Powered by JSP Technology &bull; Secure Client-Side Processing</p>", unsafe_allow_html=True)
-```eof
