@@ -98,50 +98,71 @@ if raw_input_text:
     final_lines = len(processed_text.splitlines()) if processed_text else 0
     st.caption(f"📊 Stats: {original_lines} original lines processed -> {final_lines} clean lines ready.")
 
-    # Geração do PDF com Branding Profissional da JSP Technology
+    # Geração do PDF com Branding Profissional e Logo Estilizada da JSP Technology
     class PDF(FPDF):
         def header(self):
-            # Título da Marca e Estilo Corporativo
-            self.set_font('Arial', 'B', 14)
-            self.set_text_color(33, 37, 41)
-            self.cell(0, 10, 'JSP TECHNOLOGY | DataClean Report', 0, 1, 'L')
+            # Caixa / Logo Estilizada "JSP" no topo esquerdo
+            self.set_fill_color(15, 23, 42)  # Cor grafite escuro / moderna
+            self.rect(10, 10, 15, 15, 'F')
+            self.set_font('Arial', 'B', 10)
+            self.set_text_color(255, 255, 255)
+            self.set_xy(10, 13.5)
+            self.cell(15, 8, 'JSP', 0, 0, 'C')
+
+            # Título da Marca e Informações ao lado da Logo
+            self.set_xy(28, 10)
+            self.set_font('Arial', 'B', 13)
+            self.set_text_color(15, 23, 42)
+            self.cell(100, 6, 'JSP TECHNOLOGY', 0, 1, 'L')
             
-            # Subtítulo / Chamada de Mídia Global
-            self.set_font('Arial', 'I', 8)
-            self.set_text_color(108, 117, 125)
-            self.cell(0, 4, 'Professional Data Extraction & Utility Suite - jsp-dataclean.streamlit.app', 0, 1, 'L')
+            self.set_xy(28, 16)
+            self.set_font('Arial', '', 8)
+            self.set_text_color(100, 116, 139)
+            self.cell(100, 4, 'DataClean Utility Suite | Certified Clean Report', 0, 1, 'L')
             
-            # Linha divisoria elegante
-            self.set_draw_color(200, 200, 200)
-            self.set_line_width(0.5)
-            self.line(10, 25, 200, 25)
-            self.ln(10)
+            # Linha divisória elegante abaixo do cabeçalho
+            self.set_draw_color(226, 232, 240)
+            self.set_line_width(0.6)
+            self.line(10, 28, 200, 28)
+            self.ln(12)
 
         def footer(self):
             self.set_y(-20)
             # Linha divisória do rodapé
-            self.set_draw_color(220, 220, 220)
+            self.set_draw_color(226, 232, 240)
+            self.set_line_width(0.4)
             self.line(10, 277, 200, 277)
             
-            # Informações institucionais e de mídia no rodapé
+            # Informações institucionais e paginação
             self.set_y(-15)
             self.set_font('Arial', 'B', 8)
-            self.set_text_color(80, 80, 80)
+            self.set_text_color(100, 116, 139)
             self.cell(0, 5, 'Powered by JSP Technology - Global Digital Solutions', 0, 1, 'C')
             
             self.set_font('Arial', '', 7)
-            self.set_text_color(130, 130, 130)
+            self.set_text_color(148, 163, 184)
             self.cell(0, 4, f'Page {self.page_no()} | Secure Client-Side Processing', 0, 0, 'C')
 
     def create_pdf(text_content):
         pdf = PDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=10)
-        pdf.set_text_color(40, 40, 40)
+        
+        # Título da Seção dentro do PDF
+        pdf.set_font("Arial", 'B', 11)
+        pdf.set_text_color(15, 23, 42)
+        pdf.cell(0, 8, 'Processed Clean Data Output:', 0, 1, 'L')
+        pdf.ln(2)
+
+        # Bloco de Conteúdo Formatado (Estilo Caixa de Texto Limpa)
+        pdf.set_font("Arial", size=9.5)
+        pdf.set_text_color(51, 65, 85)
         
         safe_text = text_content.encode('latin-1', 'replace').decode('latin-1')
         for line in safe_text.splitlines():
-            pdf.cell(0, 7, line, ln=True)
+            # Proteção contra quebras de página automáticas mal ajustadas
+            if pdf.get_y() > 260:
+                pdf.add_page()
+            pdf.cell(0, 6.5, line, ln=True)
             
         return bytes(pdf.output())
 
