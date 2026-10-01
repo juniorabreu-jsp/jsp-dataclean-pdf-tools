@@ -66,6 +66,15 @@ st.markdown("""
         font-size: 14px;
         line-height: 1.5;
     }
+    
+    .pricing-card {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        padding: 18px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -86,7 +95,7 @@ if 'generated_keys_db' not in st.session_state:
 if 'admin_logged' not in st.session_state:
     st.session_state.admin_logged = False
 if 'admin_password' not in st.session_state:
-    st.session_state.admin_password = "jsp2026admin" # Senha Master padrão editável em tempo de execução
+    st.session_state.admin_password = "jsp2026admin"
 
 # Captura parâmetros da URL para alternar o modo Admin
 query_params = st.query_params
@@ -100,7 +109,7 @@ if is_admin_mode:
     st.markdown("Painel administrativo restrito. Gere chaves vitalícias, gerencie planos, alertas e segurança.")
     
     if not st.session_state.admin_logged:
-        tab_login, tab_recovery = st.tabs(["🔑 Login Master", "🔄 Esqueci / Mudar Senha (Fluxo Único)"])
+        tab_login, tab_recovery = st.tabs(["🔑 Login Master", "🔄 Esqueci / Mudar Senha"])
         
         with tab_login:
             admin_pass = st.text_input("Digite a Senha Master do Admin:", type="password", placeholder="Senha atual")
@@ -114,31 +123,29 @@ if is_admin_mode:
                     
         with tab_recovery:
             st.markdown("### Recuperação e Redefinição de Senha")
-            st.markdown("Insira seu e-mail de administrador cadastrado para gerar um token de redefinição imediata.")
             recovery_email = st.text_input("E-mail do Administrador:", placeholder="contato@jsptechnology.com")
             
-            if st.button("Gerar Link/Token de Recuperação"):
+            if st.button("Gerar Token de Recuperação"):
                 if recovery_email:
                     reset_token = secrets.token_urlsafe(8).upper()
-                    st.success(f"✅ Token de recuperação gerado com sucesso!")
-                    st.info(f"🔑 **Seu Token Temporário:** `{reset_token}` (Válido para esta sessão)")
+                    st.success("✅ Token gerado com sucesso!")
+                    st.info(f"🔑 **Token Temporário:** `{reset_token}`")
                 else:
-                    st.warning("⚠️ Por favor, informe o e-mail de administrador.")
+                    st.warning("⚠️ Informe o e-mail de administrador.")
             
             st.markdown("---")
-            st.markdown("#### Redefinir com Token ou Alterar Senha Atual:")
             col_r1, col_r2 = st.columns(2)
             with col_r1:
-                old_or_token = st.text_input("Senha Atual ou Token:", type="password", placeholder="Digite senha atual ou token")
+                old_or_token = st.text_input("Senha Atual ou Token:", type="password")
             with col_r2:
-                new_pass_input = st.text_input("Nova Senha Master:", type="password", placeholder="Nova senha")
+                new_pass_input = st.text_input("Nova Senha Master:", type="password")
                 
             if st.button("Atualizar Minha Senha"):
                 if old_or_token == st.session_state.admin_password or len(old_or_token) >= 6:
                     st.session_state.admin_password = new_pass_input
-                    st.success("🎉 Senha master atualizada com sucesso! Você já pode fazer login na aba 'Login Master'.")
+                    st.success("🎉 Senha atualizada com sucesso! Faça login na aba ao lado.")
                 else:
-                    st.error("❌ Credencial atual ou token inválido.")
+                    st.error("❌ Credencial inválida.")
     else:
         st.success("✅ Autenticado como Administrador Master")
         if st.button("Sair / Fechar Painel Admin"):
@@ -148,7 +155,7 @@ if is_admin_mode:
             
         st.markdown("---")
         
-        # TAB 1: Key Generator (Com opção Vitalícia)
+        # TAB 1: Key Generator
         st.markdown("### 🔑 1. Gerar Nova Chave de Licença")
         col_k1, col_k2 = st.columns(2)
         with col_k1:
@@ -166,7 +173,7 @@ if is_admin_mode:
                 ops_count = 20
             elif "Annual" in plan_selection:
                 ops_count = 50
-            else: # Vitalícia
+            else:
                 ops_count = 999999
             
             st.session_state.generated_keys_db[new_key] = {
@@ -176,10 +183,6 @@ if is_admin_mode:
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
             }
             st.success(f"🎉 Chave gerada com sucesso: **`{new_key}`** ({plan_selection})")
-            if "Vitalícia" in plan_selection:
-                st.info("🌟 Chave vitalícia criada! Utilize para você ou envie para quem desejar acesso permanente.")
-            else:
-                st.info(f"Copie esta chave e envie para o seu cliente.")
 
         st.markdown("### 📋 Banco de Dados de Licenças")
         if st.session_state.generated_keys_db:
@@ -188,19 +191,17 @@ if is_admin_mode:
                 for k, v in st.session_state.generated_keys_db.items()
             ])
             st.dataframe(df_keys, use_container_width=True)
-        else:
-            st.info("Nenhuma chave gerada ainda.")
 
         st.markdown("---")
         
         # TAB 2: WhatsApp & Email Alert Simulator / Config
         st.markdown("### 📱 2. Configuração de Alertas de Vendas (WhatsApp & E-mail)")
         with st.form("alert_config_form"):
-            admin_whatsapp = st.text_input("Seu Número do WhatsApp (com DDI e DDD):", value="5585920025390")
-            admin_email = st.text_input("Seu E-mail de Notificação:", value="contato@jsptechnology.com")
-            test_buyer_email = st.text_input("Simular E-mail do Comprador:", value="cliente@exemplo.com")
-            test_plan_bought = st.selectbox("Simular Plano Adquirido:", ["Coffee Pass ($3)", "Monthly Pro ($9)", "Annual Pro ($49)", "Vitalícia / Permanente"])
-            test_generated_key = st.text_input("Simular Chave Gerada para o Cliente:", value="JSP-LIFETIME-A1B2C3")
+            admin_whatsapp = st.text_input("Seu WhatsApp (DDI + DDD):", value="5585920025390")
+            admin_email = st.text_input("Seu E-mail:", value="contato@jsptechnology.com")
+            test_buyer_email = st.text_input("E-mail do Comprador Teste:", value="cliente@exemplo.com")
+            test_plan_bought = st.selectbox("Plano Adquirido:", ["Coffee Pass ($3)", "Monthly Pro ($9)", "Annual Pro ($49)", "Vitalícia / Permanente"])
+            test_generated_key = st.text_input("Chave Gerada:", value="JSP-LIFETIME-A1B2C3")
             
             submit_alert_test = st.form_submit_button("🔔 Simular / Disparar Alerta para o WhatsApp")
             
@@ -211,16 +212,12 @@ if is_admin_mode:
                     f"• *Chave Gerada:* `{test_generated_key}`\n"
                     f"• *Comprador:* {test_buyer_email}\n"
                     f"• *Data:* {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
-                    f"🔐 *Acesso ao Painel Admin:*\n"
-                    f"• Senha Master atual configurada no painel."
+                    f"⚠️ *Prazo de entrega:* Até 24h devido ao fuso horário."
                 )
-                
                 encoded_msg = urllib.parse.quote(alert_msg)
                 wa_url = f"https://api.whatsapp.com/send?phone={admin_whatsapp}&text={encoded_msg}"
-                
-                st.success("✅ Alerta estruturado com sucesso!")
+                st.success("✅ Alerta estruturado!")
                 st.markdown(f"👉 **[Clique aqui para disparar o Alerta no seu WhatsApp]({wa_url})**")
-                st.info(f"📧 E-mail de notificação enviado para: **{admin_email}**")
 
 # ==========================================
 # CLIENT APP VIEW (VISÃO NORMAL DO CLIENTE)
@@ -250,24 +247,46 @@ else:
         </div>
     """, unsafe_allow_html=True)
 
-    # License & Commercial Upgrade Section
-    with st.expander("🚀 Upgrade & License Activation (Coffee Pass / Pro / Lifetime)", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
+    # License & Commercial Upgrade Section with Direct Buy Buttons
+    with st.expander("🚀 Upgrade & License Activation (Coffee Pass / Pro Plans)", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
         if st.session_state.plan_type != "Free":
             st.success(f"✨ **Active Enterprise Tier: {st.session_state.plan_type}** | Operations Remaining: {st.session_state.quota_left}")
         else:
             st.info(f"🌟 **Free Trial Status:** {st.session_state.uses_left} free runs remaining (Up to 50 lines per run).")
-            st.markdown("### Unlock Unlimited Power & Professional Reports:")
+            st.markdown("### Escolha seu Plano e Desbloqueie o Poder Máximo:")
+            
             col_p1, col_p2, col_p3 = st.columns(3)
             with col_p1:
-                st.markdown("**☕ Coffee Pass**\n- $3 one-time\n- 5 Operations\n- No subscription")
+                st.markdown("""
+                    <div class="pricing-card">
+                        <b>☕ Coffee Pass</b><br><span style="color:#16a34a; font-weight:700;">$3</span><br><font size="2">5 Operações<br>Sem assinatura</font>
+                    </div>
+                """, unsafe_allow_html=True)
+                # Substitua o link '#' pelo seu link real de checkout (ex: Kiwify / Stripe)
+                st.link_button("Comprar Coffee Pass", "https://pay.kiwify.com.br/SEU-LINK-COFFEE", use_container_width=True)
+
             with col_p2:
-                st.markdown("**📅 Monthly Pro**\n- $9 / month\n- 20 Ops / month\n- Priority support")
+                st.markdown("""
+                    <div class="pricing-card">
+                        <b>📅 Monthly Pro</b><br><span style="color:#16a34a; font-weight:700;">$9 / mês</span><br><font size="2">20 Ops / mês<br>Suporte prioritário</font>
+                    </div>
+                """, unsafe_allow_html=True)
+                st.link_button("Comprar Monthly Pro", "https://pay.kiwify.com.br/SEU-LINK-MONTHLY", use_container_width=True)
+
             with col_p3:
-                st.markdown("**⭐ Annual Pro**\n- $49 / year\n- 50 Ops / month\n- Max productivity")
+                st.markdown("""
+                    <div class="pricing-card">
+                        <b>⭐ Annual Pro</b><br><span style="color:#16a34a; font-weight:700;">$49 / ano</span><br><font size="2">50 Ops / mês<br>Máxima produtividade</font>
+                    </div>
+                """, unsafe_allow_html=True)
+                st.link_button("Comprar Annual Pro", "https://pay.kiwify.com.br/SEU-LINK-ANNUAL", use_container_width=True)
                 
             st.markdown("<br>", unsafe_allow_html=True)
-            license_input = st.text_input("Enter your License Key or Coffee Pass Code:", type="password", placeholder="Ex: JSP-COFFEE-XXXX or JSP-LIFETIME-XXXX")
-            if st.button("Activate License Key"):
+            st.markdown("---")
+            st.markdown("Já possui sua chave de acesso enviada por e-mail/WhatsApp? Insira abaixo:")
+            
+            license_input = st.text_input("Insira sua Chave de Licença:", type="password", placeholder="Ex: JSP-COFFEE-XXXX")
+            if st.button("Ativar Chave de Licença"):
                 key = license_input.strip().upper()
                 
                 if key in st.session_state.generated_keys_db:
@@ -275,10 +294,10 @@ else:
                     st.session_state.plan_type = key_data["plan"]
                     st.session_state.quota_left += key_data["ops"]
                     key_data["used"] = True
-                    st.success(f"🎉 License successfully activated! +{key_data['ops']} operations added to your account.")
+                    st.success(f"🎉 Licença ativada com sucesso! +{key_data['ops']} operações adicionadas.")
                     st.rerun()
                 else:
-                    st.error("❌ Invalid license key or already expired. Please verify your code received from JSP Technology support.")
+                    st.error("❌ Chave inválida ou já utilizada. Verifique o código enviado pela JSP Technology.")
 
     st.markdown("---")
 
