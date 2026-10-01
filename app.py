@@ -3,7 +3,7 @@ from fpdf import FPDF
 import pandas as pd
 from datetime import datetime
 
-# Page Configuration (Dark Tech / Wide Layout)
+# Page Configuration (Light Mode / Wide Layout)
 st.set_page_config(
     page_title="JSP DataClean PDF & Excel Tools",
     page_icon="⚡",
@@ -11,26 +11,27 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Advanced, Safe & Non-Breaking CSS Styling
+# Professional Light Mode CSS Styling (Clean White & High Contrast)
 st.markdown("""
     <style>
-    /* Safe App Background */
+    /* Safe Clean White Background */
     .stApp {
-        background: linear-gradient(135deg, #0b0f17 0%, #111827 50%, #0f172a 100%);
+        background-color: #f8fafc;
+        color: #0f172a;
     }
     
-    /* Custom Text Areas for optimal contrast */
+    /* Custom Text Areas for optimal light contrast */
     .stTextArea textarea {
-        background-color: #131d31 !important;
-        color: #f8fafc !important;
-        border: 1px solid #334155 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
         font-family: monospace !important;
         font-size: 14px !important;
     }
     .stTextArea textarea:focus {
-        border-color: #22c55e !important;
-        box-shadow: 0 0 8px rgba(34, 197, 94, 0.3) !important;
+        border-color: #16a34a !important;
+        box-shadow: 0 0 8px rgba(22, 163, 74, 0.2) !important;
     }
 
     /* High-impact Action Button */
@@ -39,15 +40,15 @@ st.markdown("""
         color: white !important;
         border-radius: 8px;
         font-weight: bold;
-        border: 1px solid #22c55e;
+        border: 1px solid #16a34a;
         width: 100%;
         padding: 11px;
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
     }
     .stButton button:hover {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        border-color: #4ade80;
+        background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+        border-color: #15803d;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -62,22 +63,22 @@ if 'quota_left' not in st.session_state:
 if 'run_clicked' not in st.session_state:
     st.session_state.run_clicked = False
 
-# JSP Corporate Header (Clean & Safe HTML Container)
+# JSP Corporate Header (Light Clean Mode Container)
 st.markdown("""
-    <div style="display: flex; align-items: center; background: linear-gradient(90deg, #111827 0%, #1f2937 100%); padding: 20px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-        <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #ffffff; font-weight: 900; padding: 12px 18px; border-radius: 8px; font-size: 20px; margin-right: 20px; letter-spacing: 1.5px; border: 1px solid #4b5563; display: flex; align-items: center; gap: 8px;">
+    <div style="display: flex; align-items: center; background: #ffffff; padding: 20px 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <div style="background: #0f172a; color: #ffffff; font-weight: 900; padding: 12px 18px; border-radius: 8px; font-size: 20px; margin-right: 20px; letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px;">
             <span style="color: #22c55e;">●</span> JSP
         </div>
         <div>
-            <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.8px;">JSP TECHNOLOGY</div>
-            <div style="font-size: 14px; color: #94a3b8; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
+            <div style="font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: 0.8px;">JSP TECHNOLOGY</div>
+            <div style="font-size: 14px; color: #64748b; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 st.write("Clean text lists, remove duplicates, instantly format data, and export professional reports in **PDF** or **Excel**.")
 
-# License & Plans Section (Using 100% Native Streamlit components to prevent visual bugs)
+# License & Plans Section (Using 100% Native Streamlit components)
 with st.expander("🔑 JSP Plans & License Activation", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
     if st.session_state.plan_type != "Free":
         st.success(f"✅ **Active Plan: {st.session_state.plan_type}** | Operations Left: {st.session_state.quota_left}")
@@ -210,7 +211,7 @@ if st.session_state.run_clicked:
             # Professional PDF Generation
             class PDF(FPDF):
                 def header(self):
-                    self.set_fill_color(17, 24, 39)
+                    self.set_fill_color(15, 23, 42)
                     self.rect(10, 10, 15, 15, 'F')
                     self.set_font('Arial', 'B', 10)
                     self.set_text_color(34, 197, 94)
@@ -219,7 +220,7 @@ if st.session_state.run_clicked:
 
                     self.set_xy(28, 10)
                     self.set_font('Arial', 'B', 13)
-                    self.set_text_color(17, 24, 39)
+                    self.set_text_color(15, 23, 42)
                     self.cell(100, 6, 'JSP TECHNOLOGY', 0, 1, 'L')
                     
                     self.set_xy(28, 16)
@@ -252,7 +253,7 @@ if st.session_state.run_clicked:
                 pdf.add_page()
                 
                 pdf.set_font("Arial", 'B', 11)
-                pdf.set_text_color(17, 24, 39)
+                pdf.set_text_color(15, 23, 42)
                 pdf.cell(0, 8, 'Processed Clean Data:', 0, 1, 'L')
                 pdf.ln(2)
 
@@ -302,4 +303,4 @@ if st.session_state.run_clicked:
 
 # Final Footer
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #94a3b8; font-size: 12px;'>JSP DataClean PDF & Excel Tools &bull; Powered by JSP Technology &bull; Secure Client-Side Processing</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #64748b; font-size: 12px;'>JSP DataClean PDF & Excel Tools &bull; Powered by JSP Technology &bull; Secure Client-Side Processing</p>", unsafe_allow_html=True)
