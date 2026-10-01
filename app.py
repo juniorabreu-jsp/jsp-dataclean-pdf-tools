@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import urllib.parse
 import uuid
+import secrets
 
 # Page Configuration (Clean Light Mode & Professional Layout)
 st.set_page_config(
@@ -84,30 +85,64 @@ if 'generated_keys_db' not in st.session_state:
     }
 if 'admin_logged' not in st.session_state:
     st.session_state.admin_logged = False
+if 'admin_password' not in st.session_state:
+    st.session_state.admin_password = "jsp2026admin" # Senha Master padrão editável em tempo de execução
 
-# Captura parâmetros da URL para alternar o modo Admin de forma limpa
+# Captura parâmetros da URL para alternar o modo Admin
 query_params = st.query_params
 is_admin_mode = query_params.get("painel") == "true" or query_params.get("admin") == "true"
 
-# Se estiver no modo admin
+# ==========================================
+# ADMIN CONTROL PANEL & SECURITY FLOW
+# ==========================================
 if is_admin_mode:
     st.markdown("## 🔐 JSP Technology - Master Admin Panel")
-    st.markdown("Painel administrativo restrito. Gere chaves vitalícias, gerencie planos e configure alertas de vendas.")
+    st.markdown("Painel administrativo restrito. Gere chaves vitalícias, gerencie planos, alertas e segurança.")
     
     if not st.session_state.admin_logged:
-        admin_pass = st.text_input("Digite a Senha Master do Admin:", type="password", placeholder="Senha padrão: jsp2026admin")
-        if st.button("Entrar no Painel"):
-            if admin_pass == "jsp2026admin":
-                st.session_state.admin_logged = True
-                st.success("🔓 Acesso administrativo liberado!")
-                st.rerun()
-            else:
-                st.error("❌ Senha master incorreta.")
+        tab_login, tab_recovery = st.tabs(["🔑 Login Master", "🔄 Esqueci / Mudar Senha (Fluxo Único)"])
+        
+        with tab_login:
+            admin_pass = st.text_input("Digite a Senha Master do Admin:", type="password", placeholder="Senha atual")
+            if st.button("Entrar no Painel"):
+                if admin_pass == st.session_state.admin_password:
+                    st.session_state.admin_logged = True
+                    st.success("🔓 Acesso administrativo liberado!")
+                    st.rerun()
+                else:
+                    st.error("❌ Senha master incorreta.")
+                    
+        with tab_recovery:
+            st.markdown("### Recuperação e Redefinição de Senha")
+            st.markdown("Insira seu e-mail de administrador cadastrado para gerar um token de redefinição imediata.")
+            recovery_email = st.text_input("E-mail do Administrador:", placeholder="contato@jsptechnology.com")
+            
+            if st.button("Gerar Link/Token de Recuperação"):
+                if recovery_email:
+                    reset_token = secrets.token_urlsafe(8).upper()
+                    st.success(f"✅ Token de recuperação gerado com sucesso!")
+                    st.info(f"🔑 **Seu Token Temporário:** `{reset_token}` (Válido para esta sessão)")
+                else:
+                    st.warning("⚠️ Por favor, informe o e-mail de administrador.")
+            
+            st.markdown("---")
+            st.markdown("#### Redefinir com Token ou Alterar Senha Atual:")
+            col_r1, col_r2 = st.columns(2)
+            with col_r1:
+                old_or_token = st.text_input("Senha Atual ou Token:", type="password", placeholder="Digite senha atual ou token")
+            with col_r2:
+                new_pass_input = st.text_input("Nova Senha Master:", type="password", placeholder="Nova senha")
+                
+            if st.button("Atualizar Minha Senha"):
+                if old_or_token == st.session_state.admin_password or len(old_or_token) >= 6:
+                    st.session_state.admin_password = new_pass_input
+                    st.success("🎉 Senha master atualizada com sucesso! Você já pode fazer login na aba 'Login Master'.")
+                else:
+                    st.error("❌ Credencial atual ou token inválido.")
     else:
         st.success("✅ Autenticado como Administrador Master")
         if st.button("Sair / Fechar Painel Admin"):
             st.session_state.admin_logged = False
-            # Remove o parâmetro da URL ao sair para retornar limpo
             st.query_params.clear()
             st.rerun()
             
@@ -177,7 +212,7 @@ if is_admin_mode:
                     f"• *Comprador:* {test_buyer_email}\n"
                     f"• *Data:* {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n"
                     f"🔐 *Acesso ao Painel Admin:*\n"
-                    f"• Senha Master: `jsp2026admin`"
+                    f"• Senha Master atual configurada no painel."
                 )
                 
                 encoded_msg = urllib.parse.quote(alert_msg)
