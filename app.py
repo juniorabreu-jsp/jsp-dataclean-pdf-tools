@@ -11,68 +11,43 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Advanced CSS Styling - Balanced Dark Tech & High Contrast (JSP Technology Style)
+# Advanced, Safe & Non-Breaking CSS Styling
 st.markdown("""
     <style>
-    .main {
-        background-color: #0b0f17;
-        color: #f1f5f9;
-        font-family: 'Inter', sans-serif;
-    }
+    /* Safe App Background */
     .stApp {
         background: linear-gradient(135deg, #0b0f17 0%, #111827 50%, #0f172a 100%);
     }
-    /* High Contrast Text Elements */
-    h1, h2, h3, h4, h5, h6, p, span, label {
-        color: #f1f5f9 !important;
-    }
-    .stMarkdown p {
-        color: #cbd5e1 !important;
-        font-size: 15px !important;
-    }
+    
+    /* Custom Text Areas for optimal contrast */
     .stTextArea textarea {
         background-color: #131d31 !important;
-        color: #ffffff !important;
+        color: #f8fafc !important;
         border: 1px solid #334155 !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         font-family: monospace !important;
         font-size: 14px !important;
     }
     .stTextArea textarea:focus {
         border-color: #22c55e !important;
-        box-shadow: 0 0 10px rgba(34, 197, 94, 0.3) !important;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.3) !important;
     }
-    .stTextInput input {
-        background-color: #131d31 !important;
-        color: #ffffff !important;
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
-    }
+
+    /* High-impact Action Button */
     .stButton button {
         background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-        color: white;
-        border-radius: 10px;
-        font-weight: 700;
+        color: white !important;
+        border-radius: 8px;
+        font-weight: bold;
         border: 1px solid #22c55e;
         width: 100%;
-        padding: 12px;
+        padding: 11px;
         letter-spacing: 0.5px;
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
         transition: all 0.3s ease;
     }
     .stButton button:hover {
         background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-        box-shadow: 0 6px 16px rgba(34, 197, 94, 0.5);
         border-color: #4ade80;
-    }
-    .stExpander {
-        background-color: #111827 !important;
-        border: 1px solid #334155 !important;
-        border-radius: 10px !important;
-    }
-    .stCheckbox label span {
-        color: #e2e8f0 !important;
-        font-weight: 500;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -87,34 +62,33 @@ if 'quota_left' not in st.session_state:
 if 'run_clicked' not in st.session_state:
     st.session_state.run_clicked = False
 
-# JSP Corporate Header (Dark Tech Style with Balanced Contrast)
+# JSP Corporate Header (Clean & Safe HTML Container)
 st.markdown("""
-    <div style="display: flex; align-items: center; background: linear-gradient(90deg, #111827 0%, #1f2937 100%); padding: 20px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+    <div style="display: flex; align-items: center; background: linear-gradient(90deg, #111827 0%, #1f2937 100%); padding: 20px 24px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
         <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #ffffff; font-weight: 900; padding: 12px 18px; border-radius: 8px; font-size: 20px; margin-right: 20px; letter-spacing: 1.5px; border: 1px solid #4b5563; display: flex; align-items: center; gap: 8px;">
             <span style="color: #22c55e;">●</span> JSP
         </div>
         <div>
             <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.8px;">JSP TECHNOLOGY</div>
-            <div style="font-size: 13px; color: #cbd5e1; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
+            <div style="font-size: 14px; color: #94a3b8; margin-top: 3px;">DataClean Utility Suite &bull; Global Professional Solutions</div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p>Clean text lists, remove duplicates, instantly format data, and export professional reports in <b>PDF</b> or <b>Excel</b>.</p>", unsafe_allow_html=True)
+st.write("Clean text lists, remove duplicates, instantly format data, and export professional reports in **PDF** or **Excel**.")
 
-# License & Plans Section (Expander)
+# License & Plans Section (Using 100% Native Streamlit components to prevent visual bugs)
 with st.expander("🔑 JSP Plans & License Activation", expanded=(st.session_state.plan_type == "Free" and st.session_state.uses_left <= 0)):
     if st.session_state.plan_type != "Free":
         st.success(f"✅ **Active Plan: {st.session_state.plan_type}** | Operations Left: {st.session_state.quota_left}")
     else:
         st.info(f"💡 **Free Plan:** {st.session_state.uses_left} free uses remaining (Max 50 lines / 10,000 characters).")
-        st.markdown("""
-            *☕ **Coffee Pass ($3):** 5 immediate operations (No subscription).*  
-            *📅 **Monthly Pro ($9):** 20 operations/month.*  
-            *⭐ **Annual Pro ($49):** 50 operations/month.*  
-        """)
+        st.markdown("Need more power? Choose an option below:")
+        st.markdown("- ☕ **Coffee Pass ($3):** 5 immediate operations (No subscription).")
+        st.markdown("- 📅 **Monthly Pro ($9):** 20 operations/month.")
+        st.markdown("- ⭐ **Annual Pro ($49):** 50 operations/month.")
         
-        license_input = st.text_input("Enter License Key / Coffee Pass Code:", type="password", placeholder="JSP-COFFEE-XXXX or JSP-PRO-XXXX")
+        license_input = st.text_input("Enter License Key / Coffee Pass Code:", type="password", placeholder="Ex: JSP-COFFEE-XXXX")
         if st.button("Activate Code / Refill"):
             key = license_input.strip().upper()
             if key.startswith("JSP-COFFEE"):
@@ -122,7 +96,7 @@ with st.expander("🔑 JSP Plans & License Activation", expanded=(st.session_sta
                     st.session_state.plan_type = "Coffee Pass (5 Ops)"
                     st.session_state.quota_left = 5
                 else:
-                    st.session_state.quota_left += 5  # Refill system
+                    st.session_state.quota_left += 5
                 st.success("☕ Coffee Pass activated/refilled successfully (+5 operations added)!")
                 st.rerun()
             elif key.startswith("JSP-MONTHLY"):
@@ -228,7 +202,6 @@ if st.session_state.run_clicked:
             final_lines = len(processed_text.splitlines()) if processed_text else 0
             st.caption(f"📊 Statistics: {original_lines} original lines processed -> {final_lines} clean lines ready.")
 
-            # Deduct usage upon successful execution
             if st.session_state.plan_type == "Free" and st.session_state.uses_left > 0:
                 st.session_state.uses_left -= 1
             elif st.session_state.plan_type != "Free" and st.session_state.quota_left > 0:
