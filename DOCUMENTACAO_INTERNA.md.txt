@@ -1,0 +1,42 @@
+# 📂 DOCUMENTAÇÃO INTERNA — JSP DATACLEAN PDF TOOLS
+*Pasta de Controle e Memória do Projeto (JSP Technology)*
+
+---
+
+## 1. Identificação do Projeto
+- **Nome Oficial da Ferramenta:** JSP DataClean PDF Tools
+- **Empresa Responsável:** JSP Technology
+- **Modelo de Negócio:** Micro-SaaS / Utilitário Web Global
+- **Status:** Em implantação / Fase de Publicação na Nuvem (Custo Zero)
+
+---
+
+## 2. Para que serve a ferramenta? (O Problema que ela resolve)
+É uma ferramenta utilitária web voltada para profissionais, programadores, marqueteiros e escritórios do mundo todo. 
+O usuário entra na página, cola dados ou listas bagunçadas (e-mails duplicados, textos desformatados, quebras de linha incorretas) e a ferramenta faz a limpeza instantânea, organizando os dados e permitindo o **download imediato de um relatório limpo em formato PDF**.
+
+---
+
+## 3. Onde a ferramenta vai atuar? (Mercado e Público-Alvo)
+- **Geografia:** Mercado **Global** (com foco primário em países de moeda forte: Estados Unidos, Canadá, União Europeia e centros de tecnologia como a Índia).
+- **Idioma da Interface:** Inglês neutro (padrão universal para garantir alcance internacional sem barreiras linguísticas).
+- **Canais de Atracão (Tráfego):** 
+  1. *Fase Inicial (Orgânico/Custo Zero):* Indexação natural no Google através de buscas por termos de produtividade (*data cleaner, text formatter, list deduplicator, text to pdf*).
+  2. *Fase Futura (Tráfego Pago):* Injeção de anúncios pagos direcionados usando parte do lucro gerado para acelerar os acessos internacionais.
+
+---
+
+## 4. Estrutura Técnica (O que tem na pasta)
+Para que o sistema funcione na nuvem (Streamlit Cloud), a pasta do projeto possui apenas estes arquivos essenciais:
+- `app.py`: O código principal em Python contendo a lógica de limpeza de texto, design em modo escuro e gerador de PDF.
+- `requirements.txt`: Lista de dependências que a nuvem lê para instalar o ambiente (`streamlit` e `fpdf2`).
+- `DOCUMENTACAO_INTERNA.md`: Este arquivo de anotação e lembrete pessoal.
+
+---
+
+## 5. Estratégia de Monetização
+- **Receita Primária:** Anúncios programáticos globais (como o Google AdSense) exibidos na tela da ferramenta enquanto o usuário realiza a limpeza e o download.
+- **Receita Secundária:** Links de apoio voluntário (Ko-fi / Buy Me a Coffee) para doações internacionais em dólar/euro.
+
+---
+*Notas salvaguardadas para consulta rápida e alinhamento estratégico da JSP Technology.*
